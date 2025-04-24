@@ -7,11 +7,12 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.eventshub.presentation.home.detail.ServiceDetailScreen
 import com.example.eventshub.screens.getDummyOrganizers
 import com.example.eventshub.screens.getDummyPastEvents
 import com.example.eventshub.screens.getDummyUpcomingEvents
 import com.example.eventshub.screens.navscreens.EventsScreen
-import com.example.eventshub.screens.navscreens.HomeScreen
+import com.example.eventshub.presentation.home.HomeScreen
 import com.example.eventshub.screens.navscreens.MessageScreen
 import com.example.eventshub.screens.navscreens.ProfileScreen
 import com.example.eventshub.screens.navsubscreens.ChatScreen
@@ -29,7 +30,10 @@ fun NavHostContainer(navController: NavHostController, innerPadding: PaddingValu
     ) {
         // Navigation Screens
         composable("home") {
-            HomeScreen(innerPadding)
+            HomeScreen(
+                innerPadding = innerPadding,
+                navController = navController,
+            )
         }
         composable("events") {
             EventsScreen(
@@ -83,5 +87,20 @@ fun NavHostContainer(navController: NavHostController, innerPadding: PaddingValu
                 navController.navigateUp()
             }
         }
+        composable("eventdetails") {
+
+        }
+        composable(
+            route = "servicedetails/{serviceId}",
+            arguments = listOf(navArgument("serviceId") {
+                type = NavType.IntType
+            })
+        ) { backStackEntry ->
+            val serviceId = backStackEntry.arguments?.getInt("serviceId") ?: -1
+            ServiceDetailScreen(serviceId = serviceId.toLong())
+
+        }
+
+
     }
 }

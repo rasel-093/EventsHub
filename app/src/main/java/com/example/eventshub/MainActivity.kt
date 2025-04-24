@@ -10,8 +10,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.eventshub.navigations.BottomNavigationScreen
 import com.example.eventshub.screens.ForgotPasswordScreen
-import com.example.eventshub.screens.SignInScreen
-import com.example.eventshub.screens.SignUpScreen
+import com.example.eventshub.presentation.auth.signin.SignInScreen
+import com.example.eventshub.presentation.auth.signup.SignUpScreen
 import com.example.eventshub.screens.VerificationScreen
 import com.example.eventshub.ui.theme.EventsHubTheme
 
