@@ -58,12 +58,20 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
     // Retrofit
     implementation(libs.retrofit)
 // Retrofit with Scalar Converter
     implementation(libs.converter.scalars)
     //Serialization
     implementation(libs.kotlinx.serialization.json)
+    //okhttp
+    implementation (libs.okhttp)
+    // Kotlinx Serialization Converter for Retrofit
+    //implementation (libs.retrofit2.kotlinx.serialization.converter)
+    //gson converter
+    implementation(libs.converter.gson)
+
 
     //koin compose
     implementation(libs.koin.androidx.compose)
@@ -71,10 +79,6 @@ dependencies {
     implementation(libs.koin.android)
     //koin core
     implementation (libs.koin.core)
-    //okhttp
-    implementation (libs.okhttp)
-    // Kotlinx Serialization Converter for Retrofit
-    implementation (libs.retrofit2.kotlinx.serialization.converter)
     // Coil
     implementation(libs.coil.compose)
 }

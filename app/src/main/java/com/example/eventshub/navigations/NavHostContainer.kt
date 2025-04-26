@@ -7,21 +7,17 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.eventshub.presentation.home.detail.ServiceDetailScreen
-import com.example.eventshub.screens.getDummyOrganizers
-import com.example.eventshub.screens.getDummyPastEvents
-import com.example.eventshub.screens.getDummyUpcomingEvents
-import com.example.eventshub.screens.navscreens.EventsScreen
+import com.example.eventshub.presentation.events.EventDetailScreen
+import com.example.eventshub.presentation.events.EventsScreen
 import com.example.eventshub.presentation.home.HomeScreen
+import com.example.eventshub.presentation.home.detail.ServiceDetailScreen
+import com.example.eventshub.presentation.profile.EditProfileScreen
+import com.example.eventshub.screens.getDummyOrganizers
 import com.example.eventshub.screens.navscreens.MessageScreen
-import com.example.eventshub.screens.navscreens.ProfileScreen
 import com.example.eventshub.screens.navsubscreens.ChatScreen
-import com.example.eventshub.screens.navsubscreens.EditProfileScreen
-import com.example.eventshub.screens.navsubscreens.EventDetailScreen
 
 @Composable
 fun NavHostContainer(navController: NavHostController, innerPadding: PaddingValues) {
-    val eventList = getDummyUpcomingEvents()
     val organizerList = getDummyOrganizers()
 
     NavHost(
@@ -37,13 +33,14 @@ fun NavHostContainer(navController: NavHostController, innerPadding: PaddingValu
         }
         composable("events") {
             EventsScreen(
-                getDummyUpcomingEvents(),
-                getDummyPastEvents(),
-                {},
+                {
+                    //onCreateEventClick action
+                },
                 innerPadding,
                 navController
             )
         }
+
         composable("messages") {
             MessageScreen(
                 organizerList,
@@ -53,9 +50,9 @@ fun NavHostContainer(navController: NavHostController, innerPadding: PaddingValu
                 innerPadding
             )
         }
-        composable("profile") {
-            ProfileScreen(innerPadding, navController)
-        }
+//        composable("profile") {
+//            ProfileScreen(innerPadding, navController)
+//        }
 
 
 
@@ -80,16 +77,7 @@ fun NavHostContainer(navController: NavHostController, innerPadding: PaddingValu
                 onBack = { navController.navigateUp() }
             )
         }
-        composable("eventdetails"){
-            EventDetailScreen(
-                event = eventList[0]
-            ) {
-                navController.navigateUp()
-            }
-        }
-        composable("eventdetails") {
 
-        }
         composable(
             route = "servicedetails/{serviceId}",
             arguments = listOf(navArgument("serviceId") {
@@ -99,6 +87,13 @@ fun NavHostContainer(navController: NavHostController, innerPadding: PaddingValu
             val serviceId = backStackEntry.arguments?.getInt("serviceId") ?: -1
             ServiceDetailScreen(serviceId = serviceId.toLong())
 
+        }
+
+        composable("eventdetails/{eventId}", arguments = listOf(navArgument("eventId") {
+            type = NavType.LongType
+        })) {
+            val eventId = it.arguments?.getLong("eventId") ?: -1
+            EventDetailScreen(eventId, navController)
         }
 
 

@@ -1,8 +1,5 @@
 package com.example.eventshub.data.model
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class Service(
     val id: Long,
     val title: String,

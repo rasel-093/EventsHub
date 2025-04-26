@@ -3,13 +3,13 @@ package com.example.eventshub.presentation.auth.signin
 import android.content.SharedPreferences
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.eventshub.data.model.UserSignInInfo
 import com.example.eventshub.domain.repository.AuthRepository
 import com.example.eventshub.util.Resource
 import kotlinx.coroutines.launch
-import androidx.core.content.edit
 
 class SignInViewModel(
     private val authRepository: AuthRepository,
@@ -31,11 +31,11 @@ class SignInViewModel(
 
                     _state.value = when (result) {
                         is Resource.Success -> {
-                            if (event.remember) {
-                                sharedPref.edit() {
-                                    putLong("userId", result.data!!.userId)
-                                        .putString("token", result.data.token)
-                                }
+                            sharedPref.edit() {
+                                putLong("userId", result.data!!.userId)
+                                    .putString("token", result.data.token)
+                                    .putString("role", result.data.roles)
+                                    .apply()
                             }
                             SignInState(isSuccess = true)
                         }

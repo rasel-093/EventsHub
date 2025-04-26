@@ -4,5 +4,5 @@ import com.example.eventshub.data.model.Service
 import com.example.eventshub.util.Resource
 
 interface ServiceRepository {
-    suspend fun fetchServices(): Resource<List<Service>>
+    suspend fun fetchServices(token: String): Resource<List<Service>>
 }

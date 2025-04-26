@@ -25,19 +25,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.eventshub.R
-import com.example.eventshub.screens.Event
 import com.example.eventshub.ui.theme.primaryColor
 
 @Composable
-fun EventCard(event: Event, navController: NavHostController) {
+fun EventCard(event: com.example.eventshub.data.model.Event, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable{
-                navController.navigate("eventDetails")
+                onClick()
             },
         elevation = CardDefaults.cardElevation(4.dp),
         shape = RoundedCornerShape(12.dp),
@@ -50,7 +48,7 @@ fun EventCard(event: Event, navController: NavHostController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = event.name,
+                    text = event.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = primaryColor

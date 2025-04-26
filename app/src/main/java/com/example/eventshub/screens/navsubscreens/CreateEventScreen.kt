@@ -34,7 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.eventshub.screens.Event
+import com.example.eventshub.data.model.Event
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

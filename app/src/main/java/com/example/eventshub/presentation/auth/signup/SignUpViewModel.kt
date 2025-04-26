@@ -1,53 +1,12 @@
 package com.example.eventshub.presentation.auth.signup
 
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.eventshub.data.model.User
 import com.example.eventshub.domain.repository.AuthRepository
 import com.example.eventshub.util.Resource
-import kotlinx.coroutines.launch
-
-//@HiltViewModel
-//class SignUpViewModel @Inject constructor(
-//    private val authRepository: AuthRepository
-//) : ViewModel() {
-//
-//    private val _state = mutableStateOf(SignUpState())
-//    val state: State<SignUpState> = _state
-//
-//    fun onEvent(event: SignUpEvent) {
-//        when (event) {
-//            is SignUpEvent.Submit -> {
-//                if (event.name.isBlank() || event.email.isBlank() || event.phone.isBlank() || event.password != event.confirmPassword) {
-//                    _state.value = SignUpState(error = "Please check your inputs")
-//                    return
-//                }
-//
-//                viewModelScope.launch {
-//                    _state.value = SignUpState(isLoading = true)
-//                    val result = authRepository.registerUser(
-//                        User(
-//                            name = event.name,
-//                            email = event.email,
-//                            password = event.password,
-//                            phone = event.phone,
-//                            role = event.role
-//                        )
-//                    )
-//                    _state.value = when (result) {
-//                        is Resource.Success -> SignUpState(isSuccess = true)
-//                        is Resource.Error -> SignUpState(error = result.message)
-//                        else -> SignUpState()
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 class SignUpViewModel(
@@ -122,7 +81,7 @@ class SignUpViewModel(
 
             _state.value = when (result) {
                 is Resource.Success -> SignUpState(isSuccess = true)
-                is Resource.Error -> SignUpState(error = result.message)
+                is Resource.Error ->SignUpState(error = result.message)
                 else -> SignUpState()
             }
         }

@@ -12,9 +12,11 @@ fun BottomNavigationScreen(navController: NavHostController) {
     val currentRoute = currentRoute(navController)
     val shouldShowBottomBar = remember(currentRoute) {
         when {
-            currentRoute?.startsWith("chat") == true -> false
-            currentRoute?.startsWith("editprofile") == true -> false
-            else -> true
+            currentRoute?.startsWith("home") == true -> true
+            currentRoute?.startsWith("events") == true -> true
+            currentRoute?.startsWith("messages") == true -> true
+            currentRoute?.startsWith("profile") == true -> true
+            else -> false
         }
     }
 

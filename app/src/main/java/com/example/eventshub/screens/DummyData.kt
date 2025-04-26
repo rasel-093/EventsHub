@@ -3,7 +3,6 @@ package com.example.eventshub.screens
 import com.example.eventshub.R
 import com.example.eventshub.screens.navscreens.Message
 import com.example.eventshub.screens.navscreens.Organizer
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -254,24 +253,5 @@ fun getDummyOrganizers(): List<Organizer> {
                 )
             )
         )
-    )
-}
-data class Event(val name: String, val date: String)
-fun getDummyUpcomingEvents(): List<Event> {
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    return listOf(
-        Event("Birthday Party", LocalDate.parse("2024-01-15", formatter).toString()),
-        Event("Wedding Anniversary", LocalDate.parse("2024-02-20", formatter).toString()),
-        Event("Conference", LocalDate.parse("2024-03-10", formatter).toString()),
-        Event("Music Festival", LocalDate.parse("2024-04-05", formatter).toString())
-    )
-}
-fun getDummyPastEvents(): List<Event> {
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    return listOf(
-        Event("Graduation Ceremony", LocalDate.parse("2023-06-25", formatter).toString()),
-        Event("Summer Vacation Trip", LocalDate.parse("2023-07-10", formatter).toString()),
-        Event("Family Reunion", LocalDate.parse("2023-08-20", formatter).toString()),
-        Event("Holiday Party", LocalDate.parse("2023-12-24", formatter).toString())
     )
 }
