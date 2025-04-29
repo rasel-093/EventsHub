@@ -26,11 +26,11 @@ data class Organizer(
 )
 data class Message(val text: String, val isSentByUser: Boolean, val timestamp: LocalDateTime)
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MessageScreen(organizers: List<Organizer>, onOrganizerSelected: (Int) -> Unit, innerPadding: PaddingValues) {
     Column(
-        modifier = Modifier.fillMaxSize().background(Color.White).padding(innerPadding)
+        modifier = Modifier.fillMaxSize().background(Color.White)
+        //.padding(innerPadding
     ) {
         Text(
             modifier = Modifier.padding(16.dp),

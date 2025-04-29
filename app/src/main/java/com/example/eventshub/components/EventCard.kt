@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.eventshub.R
 import com.example.eventshub.ui.theme.primaryColor
+import com.example.eventshub.util.formatMillisToReadableDateTime
 
 @Composable
 fun EventCard(event: com.example.eventshub.data.model.Event, onClick: () -> Unit) {
@@ -48,7 +49,7 @@ fun EventCard(event: com.example.eventshub.data.model.Event, onClick: () -> Unit
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = event.title,
+                    text = event.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = primaryColor
@@ -68,7 +69,7 @@ fun EventCard(event: com.example.eventshub.data.model.Event, onClick: () -> Unit
                     tint = Color.Gray
                 )
                 Text(
-                    text = " ${event.date}",
+                    text = formatMillisToReadableDateTime(event.date),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray,
                     modifier = Modifier.weight(1f)
@@ -76,26 +77,6 @@ fun EventCard(event: com.example.eventshub.data.model.Event, onClick: () -> Unit
             }
 
             Spacer(modifier = Modifier.height(4.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = "Location",
-                    modifier = Modifier.size(16.dp),
-                    tint = Color.Gray
-                )
-                Text(
-                    text = "Event place",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
 
             LinearProgressIndicator(
                 progress = { 0.2F },
@@ -117,7 +98,7 @@ fun EventCard(event: com.example.eventshub.data.model.Event, onClick: () -> Unit
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    text = "Budget: $${15000}",
+                    text = "Budget: $${event.budget}",
                     style = MaterialTheme.typography.bodySmall
                 )
             }

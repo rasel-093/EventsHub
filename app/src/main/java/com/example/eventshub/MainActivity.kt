@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
@@ -17,10 +18,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.eventshub.navigations.BottomNavigationBar
+import com.example.eventshub.navigations.currentRoute
 import com.example.eventshub.presentation.auth.signin.SignInScreen
 import com.example.eventshub.presentation.auth.signup.SignUpScreen
 import com.example.eventshub.presentation.events.EventDetailScreen
 import com.example.eventshub.presentation.events.EventsScreen
+import com.example.eventshub.presentation.events.EventsViewModel
 import com.example.eventshub.presentation.home.HomeScreen
 import com.example.eventshub.presentation.home.detail.ServiceDetailScreen
 import com.example.eventshub.presentation.profile.EditProfileScreen
@@ -31,6 +34,7 @@ import com.example.eventshub.screens.getDummyOrganizers
 import com.example.eventshub.screens.navscreens.MessageScreen
 import com.example.eventshub.screens.navsubscreens.ChatScreen
 import com.example.eventshub.ui.theme.EventsHubTheme
+import org.koin.androidx.compose.koinViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -67,19 +71,37 @@ fun App() {
     }
 }
 @Composable
-fun MainScreen(navController: NavHostController) {
+fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = koinViewModel(),) {
     val tabNavController = rememberNavController()
     val organizerList = getDummyOrganizers()
+    val events = viewModel.getAllEventsFromState()
+
+    //Conditional bottom bar rendering
+    val currentRoute = currentRoute(tabNavController)
+    val shouldShowBottomBar = remember(currentRoute) {
+        when {
+            currentRoute?.startsWith("main") == true -> true
+            currentRoute?.startsWith("events") == true -> true
+            currentRoute?.startsWith("messages") == true -> true
+            currentRoute?.startsWith("profile") == true -> true
+            currentRoute?.startsWith("home") == true -> true
+            else -> false
+        }
+    }
     Scaffold(
-        bottomBar = { BottomNavigationBar(tabNavController) }
+        bottomBar = {
+            if (shouldShowBottomBar) BottomNavigationBar(tabNavController)
+        }
     ) { innerPadding ->
         NavHost(
             navController = tabNavController,
             startDestination = "home",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("home") { HomeScreen(innerPadding, tabNavController) }
-            composable("events") { EventsScreen({}, innerPadding, tabNavController) }
+            composable("home") {
+                HomeScreen(innerPadding, tabNavController)
+            }
+            composable("events") { EventsScreen(innerPadding, tabNavController) }
             composable("messages") { MessageScreen(organizers = organizerList,{}, innerPadding) }
             composable("profile") { ProfileScreen(innerPadding, navController, tabNavController = tabNavController) }
 
@@ -101,7 +123,7 @@ fun MainScreen(navController: NavHostController) {
                             launchSingleTop = true
                         }
                     },
-                    onBack = { navController.navigateUp() }
+                    onBack = { tabNavController.navigateUp() }
                 )
             }
 
@@ -120,7 +142,10 @@ fun MainScreen(navController: NavHostController) {
                 type = NavType.LongType
             })) {
                 val eventId = it.arguments?.getLong("eventId") ?: -1
-                EventDetailScreen(eventId, navController)
+                val event = events.find { it.id == eventId }
+                if (event != null) {
+                    EventDetailScreen(event, tabNavController)
+                }
             }
         }
     }

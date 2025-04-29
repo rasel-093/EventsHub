@@ -66,7 +66,7 @@ val appModule = module {
     viewModel { SharedServiceViewModel() }
 
     //Events
-    viewModel { EventsViewModel(get()) }
+    viewModel { EventsViewModel(get(), get()) }
     //Profile
     viewModel { ProfileViewModel(get(), androidApplication().getSharedPreferences("auth", Context.MODE_PRIVATE)) }
     //EditProfile
