@@ -7,5 +7,6 @@ fun logout(preferences: SharedPreferences) {
     preferences.edit() {
         remove("userId")
             .remove("token")
+            .remove("role").apply()
     }
 }

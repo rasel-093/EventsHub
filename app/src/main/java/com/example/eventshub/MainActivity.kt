@@ -2,6 +2,7 @@ package com.example.eventshub
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -17,24 +18,29 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.eventshub.data.model.Event
+import com.example.eventshub.data.model.Role
+import com.example.eventshub.data.model.Service
 import com.example.eventshub.navigations.BottomNavigationBar
 import com.example.eventshub.navigations.currentRoute
 import com.example.eventshub.presentation.auth.signin.SignInScreen
 import com.example.eventshub.presentation.auth.signup.SignUpScreen
-import com.example.eventshub.presentation.events.EventDetailScreen
+import com.example.eventshub.presentation.events.eventdetails.EventDetailScreen
 import com.example.eventshub.presentation.events.EventsScreen
 import com.example.eventshub.presentation.events.EventsViewModel
 import com.example.eventshub.presentation.home.HomeScreen
 import com.example.eventshub.presentation.home.detail.ServiceDetailScreen
+import com.example.eventshub.presentation.messages.ChatScreen
+import com.example.eventshub.presentation.messages.MessageScreen
 import com.example.eventshub.presentation.profile.EditProfileScreen
 import com.example.eventshub.presentation.profile.ProfileScreen
+import com.example.eventshub.presentation.serviceprovider.ServiceProviderHomeScreen
 import com.example.eventshub.screens.ForgotPasswordScreen
 import com.example.eventshub.screens.VerificationScreen
-import com.example.eventshub.screens.getDummyOrganizers
-import com.example.eventshub.screens.navscreens.MessageScreen
-import com.example.eventshub.screens.navsubscreens.ChatScreen
 import com.example.eventshub.ui.theme.EventsHubTheme
+import com.google.gson.Gson
 import org.koin.androidx.compose.koinViewModel
+import java.net.URLDecoder
 
 
 class MainActivity : ComponentActivity() {
@@ -56,9 +62,9 @@ fun App() {
     val preferences = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
     val token = preferences.getString("token", null)
     val userId = preferences.getLong("userId", -1)
-
-    val isLoggedIn = token != null && userId != -1L
-
+    val role = preferences.getString("role", null)
+    Log.d("Role", "Role is null")
+    val isLoggedIn = token != null && userId != -1L && role != null
     NavHost(
         navController = navController,
         startDestination = if (isLoggedIn) "main" else "signin"
@@ -67,14 +73,16 @@ fun App() {
         composable("signup") { SignUpScreen(navController) }
         composable("forgotpass") { ForgotPasswordScreen(navController) }
         composable("verification") { VerificationScreen(navController) }
-        composable("main") { MainScreen(navController) } // Main with BottomNavigation
+        composable("main") {
+            if (role != null) {
+                MainScreen(navController, role = role)
+            }
+        } // Main with BottomNavigation
     }
 }
 @Composable
-fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = koinViewModel(),) {
+fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = koinViewModel(), role: String) {
     val tabNavController = rememberNavController()
-    val organizerList = getDummyOrganizers()
-    val events = viewModel.getAllEventsFromState()
 
     //Conditional bottom bar rendering
     val currentRoute = currentRoute(tabNavController)
@@ -85,6 +93,8 @@ fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = ko
             currentRoute?.startsWith("messages") == true -> true
             currentRoute?.startsWith("profile") == true -> true
             currentRoute?.startsWith("home") == true -> true
+           // currentRoute?.startsWith("serviceproviderhome") == true -> true
+           // currentRoute?.startsWith("home") == true -> true
             else -> false
         }
     }
@@ -98,11 +108,20 @@ fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = ko
             startDestination = "home",
             modifier = Modifier.padding(innerPadding)
         ) {
+            //Bottom navigation composables
             composable("home") {
-                HomeScreen(innerPadding, tabNavController)
+                Log.d("Role", role)
+                if (role == Role.SERVICE_PROVIDER.toString()) {
+                    Log.d("MainScreen", "Service provider home screen called")
+                    ServiceProviderHomeScreen()
+                } else {
+                    Log.d("MainScreen", "Home screen called")
+                    HomeScreen(innerPadding, tabNavController)
+                }
             }
+            //composable("serviceproviderhome") { ServiceProviderHomeScreen() }
             composable("events") { EventsScreen(innerPadding, tabNavController) }
-            composable("messages") { MessageScreen(organizers = organizerList,{}, innerPadding) }
+            composable("messages") { MessageScreen(tabNavController) }
             composable("profile") { ProfileScreen(innerPadding, navController, tabNavController = tabNavController) }
 
             /** Sub Screens inside tabs */
@@ -111,7 +130,7 @@ fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = ko
                 arguments = listOf(navArgument("organizerId") { type = NavType.IntType })
             ) { backStackEntry ->
                 val organizerId = backStackEntry.arguments?.getInt("organizerId") ?: -1
-                ChatScreen(organizerList[organizerId], innerPadding, onBackClick = { navController.navigateUp()})
+                //ChatScreen(organizerList[organizerId], innerPadding, onBackClick = { navController.navigateUp()})
             }
 
             composable("editprofile") {
@@ -128,25 +147,41 @@ fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = ko
             }
 
             composable(
-                route = "servicedetails/{serviceId}",
-                arguments = listOf(navArgument("serviceId") {
-                    type = NavType.IntType
-                })
+                route = "servicedetails/{serviceJson}",
+                arguments = listOf(navArgument("serviceJson") { type = NavType.StringType })
             ) { backStackEntry ->
-                val serviceId = backStackEntry.arguments?.getInt("serviceId") ?: -1
-                ServiceDetailScreen(serviceId = serviceId.toLong())
-
+                val json = backStackEntry.arguments?.getString("serviceJson") ?: ""
+                val service = Gson().fromJson(URLDecoder.decode(json, "UTF-8"), Service::class.java)
+                ServiceDetailScreen(service = service, navController = tabNavController)
             }
 
-            composable("eventdetails/{eventId}", arguments = listOf(navArgument("eventId") {
-                type = NavType.LongType
-            })) {
-                val eventId = it.arguments?.getLong("eventId") ?: -1
-                val event = events.find { it.id == eventId }
+
+            composable(
+                route = "eventdetails/{eventJson}",
+                arguments = listOf(navArgument("eventJson") { type = NavType.StringType }))
+            {backStackEntry ->
+                val json = backStackEntry.arguments?.getString("eventJson") ?: ""
+                val event = Gson().fromJson(URLDecoder.decode(json, "UTF-8"), Event::class.java)
                 if (event != null) {
                     EventDetailScreen(event, tabNavController)
                 }
             }
+            composable("messages") {
+                MessageScreen(tabNavController)
+            }
+
+            composable(
+                route = "chat/{receiverId}/{receiverName}",
+                arguments = listOf(
+                    navArgument("receiverId") { type = NavType.LongType },
+                    navArgument("receiverName") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val receiverId = backStackEntry.arguments?.getLong("receiverId") ?: -1L
+                val receiverName = backStackEntry.arguments?.getString("receiverName") ?: "Chat"
+                ChatScreen(receiverId = receiverId, receiverName = receiverName)
+            }
+
         }
     }
 }

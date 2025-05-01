@@ -15,35 +15,34 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.eventshub.rowitems.MessageCard
 import com.example.eventshub.ui.theme.primaryColor
 import java.time.LocalDateTime
-data class Organizer(
-    val id: Int,
-    val name: String,
-    val profileImage: Int, // Resource ID
-    val messages: List<Message>
-)
-data class Message(val text: String, val isSentByUser: Boolean, val timestamp: LocalDateTime)
-
-@Composable
-fun MessageScreen(organizers: List<Organizer>, onOrganizerSelected: (Int) -> Unit, innerPadding: PaddingValues) {
-    Column(
-        modifier = Modifier.fillMaxSize().background(Color.White)
-        //.padding(innerPadding
-    ) {
-        Text(
-            modifier = Modifier.padding(16.dp),
-            text = "EventsHub",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = primaryColor)
-        LazyColumn(modifier = Modifier
-            .fillMaxSize()
-        ) {
-            itemsIndexed(organizers) {index, organizer ->
-                MessageCard(organizer) { onOrganizerSelected(index) }
-            }
-        }
-    }
-}
+//data class Organizer(
+//    val id: Int,
+//    val name: String,
+//    val profileImage: Int, // Resource ID
+//    val messages: List<Message>
+//)
+//data class Message(val text: String, val isSentByUser: Boolean, val timestamp: LocalDateTime)
+//
+//@Composable
+//fun MessageScreen(organizers: List<Organizer>, onOrganizerSelected: (Int) -> Unit, innerPadding: PaddingValues) {
+//    Column(
+//        modifier = Modifier.fillMaxSize().background(Color.White)
+//        //.padding(innerPadding
+//    ) {
+//        Text(
+//            modifier = Modifier.padding(16.dp),
+//            text = "EventsHub",
+//            fontSize = 24.sp,
+//            fontWeight = FontWeight.Bold,
+//            color = primaryColor)
+//        LazyColumn(modifier = Modifier
+//            .fillMaxSize()
+//        ) {
+//            itemsIndexed(organizers) {index, organizer ->
+//                MessageCard(organizer) { onOrganizerSelected(index) }
+//            }
+//        }
+//    }
+//}

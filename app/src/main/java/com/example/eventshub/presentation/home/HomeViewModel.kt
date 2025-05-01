@@ -21,7 +21,7 @@ class HomeViewModel(
         fetchServices()
     }
 
-    private fun fetchServices() {
+     private fun fetchServices() {
         val token = preferences.getString("token", "") ?: ""
         if (token.isBlank()) {
             _state.value = HomeState(error = "No token found")

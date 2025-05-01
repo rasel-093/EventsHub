@@ -1,5 +1,4 @@
 package com.example.eventshub.presentation.events
-import android.content.SharedPreferences
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,10 +41,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.eventshub.R
 import com.example.eventshub.components.EventCard
-import com.example.eventshub.presentation.events.createevent.CreateEventDialog
+import com.example.eventshub.presentation.events.createevent.CreateOrEditEventDialog
 import com.example.eventshub.ui.theme.primaryColor
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import java.net.URLEncoder
 
 @Composable
 fun EventsScreen(
@@ -55,15 +56,20 @@ fun EventsScreen(
 ) {
     val state by viewModel.state
     var selectedTab by remember { mutableIntStateOf(0) }
-    var showCreateDialog by remember { mutableStateOf(false) }
+    var showCreateEventDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val eventsToShow = if (selectedTab == 0) state.upcomingEvents else state.pastEvents
+    LaunchedEffect(navController.currentBackStackEntry) {
+        // always refresh when returning to this screen
+        viewModel.loadEvents()
+    }
+
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showCreateDialog = true },
+                onClick = { showCreateEventDialog = true },
                 containerColor = primaryColor,
             ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Create Event")
@@ -120,7 +126,9 @@ fun EventsScreen(
                     itemsIndexed(eventsToShow) { _, event ->
                         EventCard(
                             event, onClick = {
-                                navController.navigate("eventdetails/${event.id}")
+                                val gson = Gson()
+                                val encoded = URLEncoder.encode(gson.toJson(event), "UTF-8")
+                                navController.navigate("eventdetails/$encoded")
                             }
                         )
                     }
@@ -137,12 +145,13 @@ fun EventsScreen(
             }
         }
     }
-    if (showCreateDialog) {
-        CreateEventDialog(
-            onDismiss = { showCreateDialog = false },
+    if (showCreateEventDialog) {
+        CreateOrEditEventDialog(
+            onDismiss = { showCreateEventDialog = false },
             onConfirm = { event ->
                 viewModel.createEvent(event)
-                showCreateDialog = false
+                showCreateEventDialog = false
+                viewModel.loadEvents()
             }
         )
     }

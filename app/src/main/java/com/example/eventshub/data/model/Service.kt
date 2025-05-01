@@ -10,3 +10,6 @@ data class Service(
     val imageLink: String,
     val serviceType: String
 )
+enum class ServiceType {
+    CATERER, DECORATOR
+}

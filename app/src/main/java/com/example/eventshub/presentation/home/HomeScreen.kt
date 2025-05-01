@@ -1,5 +1,6 @@
 package com.example.eventshub.presentation.home
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,9 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.eventshub.presentation.home.components.SearchBarCustom
-import com.example.eventshub.presentation.home.shared.SharedServiceViewModel
 import com.example.eventshub.ui.theme.primaryColor
+import com.google.gson.Gson
 import org.koin.androidx.compose.koinViewModel
+import java.net.URLEncoder
 
 //Full code having api integrated. ....
 @Composable
@@ -42,18 +45,9 @@ fun HomeScreen(
     innerPadding: PaddingValues,
     navController: NavHostController,
     viewModel: HomeViewModel = koinViewModel(),
-    sharedServiceViewModel: SharedServiceViewModel = koinViewModel()
 ) {
     val state by viewModel.state
     var searchQuery by remember { mutableStateOf("") }
-
-    // Cache services in shared viewmodel
-    LaunchedEffect(state.services) {
-        if (state.services.isNotEmpty()) {
-            sharedServiceViewModel.setServices(state.services)
-        }
-    }
-
     val filteredServices = remember(searchQuery, state.services) {
         if (searchQuery.isBlank()) state.services
         else state.services.filter {
@@ -86,13 +80,16 @@ fun HomeScreen(
 
             else -> {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(filteredServices) { service ->
+                    itemsIndexed(filteredServices) { index,service ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 12.dp, vertical = 8.dp)
                                 .clickable {
-                                    navController.navigate("servicedetails/${service.id}")
+                                    //passing service
+                                    val gson = Gson()
+                                    val encoded = URLEncoder.encode(gson.toJson(service), "UTF-8")
+                                    navController.navigate("servicedetails/$encoded")
                                 },
                             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White)
