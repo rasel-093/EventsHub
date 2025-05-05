@@ -10,10 +10,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -44,7 +47,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.eventshub.components.ButtonFullWidth
 import com.example.eventshub.components.TopBarWithBackButton
+import com.example.eventshub.data.model.BookingStatus
 import com.example.eventshub.data.model.Event
+import com.example.eventshub.data.model.ServiceBookingInfo
+import com.example.eventshub.presentation.booking.BookingViewModel
 import com.example.eventshub.presentation.events.EventsViewModel
 import com.example.eventshub.presentation.events.createevent.CreateOrEditEventDialog
 import com.example.eventshub.util.formatMillisToReadableDateTime
@@ -58,6 +64,7 @@ fun EventDetailScreen(
     navController: NavHostController,
     viewModel: EventDetailViewModel = koinViewModel(),
     eventViewModel: EventsViewModel = koinViewModel(),
+    bookingViewModel: BookingViewModel = koinViewModel()
 ) {
     var event by remember { mutableStateOf(initialEvent) } // ✅ This makes it reactive
     var showEditDialog by remember { mutableStateOf(false) }
@@ -65,6 +72,7 @@ fun EventDetailScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    bookingViewModel.loadRegisteredServices(event.id)
 
     LaunchedEffect(Unit) {
         viewModel.loadRegisteredServices(event.id)
@@ -88,6 +96,7 @@ fun EventDetailScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .padding(16.dp)
+               .verticalScroll(rememberScrollState())
         ) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -126,52 +135,93 @@ fun EventDetailScreen(
             Spacer(Modifier.height(20.dp))
             Divider()
 
-            Text("Registered Services", style = MaterialTheme.typography.titleMedium)
+            Text("Cart", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             val services = viewModel.services.value
 
             if (services.isEmpty()) {
                 Text("No services added to this event yet.", color = Color.Gray)
             } else {
-                LazyColumn {
-                    items(services) { service ->
-                        Card(
-                            modifier = Modifier
+                services.forEach {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        elevation = CardDefaults.cardElevation(4.dp)
+                    ) {
+                        Row(
+                            Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            elevation = CardDefaults.cardElevation(4.dp)
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    Text(service.title, style = MaterialTheme.typography.titleMedium)
-                                    Text("Type: ${service.serviceType}", color = Color.Gray)
-                                    Text("Fee: $${service.fee}")
-                                }
-
-                                IconButton(onClick = {
-                                    viewModel.removeServiceFromEvent(
-                                        eventId = event.id,
-                                        serviceId = service.id
-                                    )
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Remove service",
-                                        tint = MaterialTheme.colorScheme.error
-                                    )
-                                }
-
+                            Column {
+                                Text(it.title, style = MaterialTheme.typography.titleMedium)
+                                Text("Type: ${it.serviceType}", color = Color.Gray)
+                                Text("Fee: $${it.fee}")
                             }
+                            Button(onClick = {
+                                val bookingInfo = ServiceBookingInfo(
+                                    serviceId = it.id,
+                                    eventOrganizerId = event.organizerId, // make sure this exists in your Event model
+                                    status = BookingStatus.PENDING
+                                )
+                                bookingViewModel.confirmServiceBooking(bookingInfo)
+                                bookingViewModel.loadRegisteredServices(event.id)
+                            }) {
+                                Text("Confirm")
+                            }
+
+                            IconButton(onClick = {
+                                viewModel.removeServiceFromEvent(
+                                    eventId = event.id,
+                                    serviceId = it.id
+                                )
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Remove service",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+
                         }
                     }
                 }
             }
+
+            //Registered Services
+            Spacer(Modifier.height(24.dp))
+            Text("Registered Services", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+
+            val registered = bookingViewModel.registeredServices.value
+            if (registered.isEmpty()) {
+                Text("No registered services yet.", color = Color.Gray)
+            } else {
+                registered.forEach {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        elevation = CardDefaults.cardElevation(4.dp)
+                    ) {
+                        Column(Modifier.padding(12.dp)) {
+                            Text(it.title, style = MaterialTheme.typography.titleMedium)
+                            Text("Type: ${it.serviceType}", color = Color.Gray)
+                            Text("Fee: $${it.fee}")
+                            Text("Status: ${it.bookingStatus}", color = Color.Blue)
+                        }
+                    }
+                }
+//                LazyColumn {
+//                    items(registered) { booking ->
+//
+//                    }
+//                }
+            }
+
 
         }
 

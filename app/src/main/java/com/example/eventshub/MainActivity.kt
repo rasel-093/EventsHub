@@ -25,6 +25,8 @@ import com.example.eventshub.navigations.BottomNavigationBar
 import com.example.eventshub.navigations.currentRoute
 import com.example.eventshub.presentation.auth.signin.SignInScreen
 import com.example.eventshub.presentation.auth.signup.SignUpScreen
+import com.example.eventshub.presentation.booking.BookingScreen
+import com.example.eventshub.presentation.booking.BookingViewModel
 import com.example.eventshub.presentation.events.eventdetails.EventDetailScreen
 import com.example.eventshub.presentation.events.EventsScreen
 import com.example.eventshub.presentation.events.EventsViewModel
@@ -77,7 +79,7 @@ fun App() {
             if (role != null) {
                 MainScreen(navController, role = role)
             }
-        } // Main with BottomNavigation
+        }
     }
 }
 @Composable
@@ -110,17 +112,19 @@ fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = ko
         ) {
             //Bottom navigation composables
             composable("home") {
-                Log.d("Role", role)
                 if (role == Role.SERVICE_PROVIDER.toString()) {
-                    Log.d("MainScreen", "Service provider home screen called")
                     ServiceProviderHomeScreen()
                 } else {
-                    Log.d("MainScreen", "Home screen called")
                     HomeScreen(innerPadding, tabNavController)
                 }
             }
-            //composable("serviceproviderhome") { ServiceProviderHomeScreen() }
-            composable("events") { EventsScreen(innerPadding, tabNavController) }
+            composable("events") {
+                if (role == Role.SERVICE_PROVIDER.toString()) {
+                    BookingScreen()
+                } else {
+                    EventsScreen(innerPadding, tabNavController)
+                }
+            }
             composable("messages") { MessageScreen(tabNavController) }
             composable("profile") { ProfileScreen(innerPadding, navController, tabNavController = tabNavController) }
 
@@ -179,7 +183,7 @@ fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = ko
             ) { backStackEntry ->
                 val receiverId = backStackEntry.arguments?.getLong("receiverId") ?: -1L
                 val receiverName = backStackEntry.arguments?.getString("receiverName") ?: "Chat"
-                ChatScreen(receiverId = receiverId, receiverName = receiverName)
+                ChatScreen(receiverId = receiverId, navController =  tabNavController, receiverName = receiverName)
             }
 
         }

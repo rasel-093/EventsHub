@@ -3,22 +3,26 @@ package com.example.eventshub.di
 import android.content.Context
 import android.content.SharedPreferences
 import com.example.eventshub.data.remote.api.AuthApi
+import com.example.eventshub.data.remote.api.BookingApi
 import com.example.eventshub.data.remote.api.EventApi
 import com.example.eventshub.data.remote.api.MessageApi
 import com.example.eventshub.data.remote.api.ServiceApi
 import com.example.eventshub.data.remote.api.UserApi
 import com.example.eventshub.data.remote.repository.AuthRepositoryImpl
+import com.example.eventshub.data.remote.repository.BookingRepositoryImpl
 import com.example.eventshub.data.remote.repository.EventRepositoryImpl
 import com.example.eventshub.data.remote.repository.MessageRepositoryImpl
 import com.example.eventshub.data.remote.repository.ServiceRepositoryImpl
 import com.example.eventshub.data.remote.repository.UserRepositoryImpl
 import com.example.eventshub.domain.repository.AuthRepository
+import com.example.eventshub.domain.repository.BookingRepository
 import com.example.eventshub.domain.repository.EventRepository
 import com.example.eventshub.domain.repository.MessageRepository
 import com.example.eventshub.domain.repository.ServiceRepository
 import com.example.eventshub.domain.repository.UserRepository
 import com.example.eventshub.presentation.auth.signin.SignInViewModel
 import com.example.eventshub.presentation.auth.signup.SignUpViewModel
+import com.example.eventshub.presentation.booking.BookingViewModel
 import com.example.eventshub.presentation.events.EventsViewModel
 import com.example.eventshub.presentation.events.eventdetails.EventDetailViewModel
 import com.example.eventshub.presentation.home.HomeViewModel
@@ -51,6 +55,8 @@ val appModule = module {
     single { get<Retrofit>().create(ServiceApi::class.java) }
     single { get<Retrofit>().create(UserApi::class.java) }
     single { get<Retrofit>().create(MessageApi::class.java) }
+    single { get<Retrofit>().create(BookingApi::class.java) }
+
 
     // Provide Repositories
     single<AuthRepository> { AuthRepositoryImpl(get()) }
@@ -61,6 +67,8 @@ val appModule = module {
         androidApplication().getSharedPreferences("auth", Context.MODE_PRIVATE)
     }
     single<MessageRepository> { MessageRepositoryImpl(get()) }
+    single<BookingRepository> { BookingRepositoryImpl(get()) }
+
 
 
     //Provide ViewModels
@@ -94,4 +102,7 @@ val appModule = module {
     //Message and Chatviewmodel
     viewModel{ MessageListViewModel(get(), get())}
     viewModel{ ChatViewModel(get(), get()) }
+
+    //Booking viewmodel
+    viewModel { BookingViewModel(get(), get()) }
 }

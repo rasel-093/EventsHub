@@ -1,19 +1,29 @@
 package com.example.eventshub.presentation.messages
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import com.example.eventshub.R
 import com.example.eventshub.data.model.UserBasicInfo
 import com.example.eventshub.data.model.Message
 import org.koin.androidx.compose.koinViewModel
@@ -24,6 +34,7 @@ import java.util.*
 fun ChatScreen(
     receiverId: Long,
     receiverName: String,
+    navController: NavHostController,
     viewModel: ChatViewModel = koinViewModel()
 ) {
     val messages by viewModel.messages
@@ -36,7 +47,14 @@ fun ChatScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(title = { Text(receiverName) })
+        TopAppBar(
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            },
+            title = { Text(receiverName) }
+        )
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
@@ -67,28 +85,52 @@ fun ChatScreen(
                     }
                 }
             }
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp),
+                    .padding(8.dp)
+                    .background(Color.White),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextField(
                     value = input,
                     onValueChange = { input = it },
-                    modifier = Modifier.weight(1f),
-                    placeholder = { Text("Type a message") }
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(Color.White, CircleShape)
+                        .border(1.dp, Color.LightGray, CircleShape),
+                    placeholder = { Text("Type a message", color = Color.Gray) },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        disabledContainerColor = Color.White,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
+                    shape = CircleShape,
+                    singleLine = true
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = {
-                    if (input.isNotBlank()) {
-                        viewModel.sendMessage(receiverId, input)
-                        Log.d("ChatScreen", "Message sent: $input, ReceiverId: $receiverId")
-                        input = ""
-                    }
-                }) {
-                    Text("Send")
+                Button(
+                    onClick = {
+                        if (input.isNotBlank()) {
+                            viewModel.sendMessage(receiverId, input)
+                            Log.d("ChatScreen", "Message sent: $input, ReceiverId: $receiverId")
+                            input = ""
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(4.dp),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4A8CC0) // WhatsApp green color
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Send,
+                        contentDescription = "Send message",
+                        tint = Color.White
+                    )
                 }
             }
         }

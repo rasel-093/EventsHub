@@ -1,6 +1,9 @@
 package com.example.eventshub.presentation.profile
 import android.content.SharedPreferences
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,9 +44,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.eventshub.R
 import com.example.eventshub.ui.theme.primaryColor
 import com.example.eventshub.util.logout
 import org.koin.androidx.compose.koinViewModel
@@ -59,121 +65,174 @@ fun ProfileScreen(
 ) {
     val state by viewModel.state
     val preferences: SharedPreferences = koinInject()
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profile", style = MaterialTheme.typography.titleLarge) },
+                title = {
+                    Text(
+                        "Profile",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        color = onSurfaceColor
+                    )
+                },
                 actions = {
-                    IconButton(onClick = {
-                        tabNavController.navigate("editprofile") {
-                            launchSingleTop = true
-                        }
-                    }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit Profile", tint = primaryColor)
+                    IconButton(
+                        onClick = { tabNavController.navigate("editprofile") { launchSingleTop = true } },
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Edit Profile",
+                            tint = primaryColor,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black
-                )
+                    containerColor = surfaceColor,
+                    titleContentColor = onSurfaceColor,
+                    actionIconContentColor = primaryColor
+                ),
+                //elevation = 4.dp
             )
         },
-        containerColor = Color.White
+        containerColor = surfaceColor
     ) { paddingValues ->
-        if (state.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+        when {
+            state.isLoading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = primaryColor)
+                }
             }
-        } else if (state.error != null) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = state.error ?: "", color = MaterialTheme.colorScheme.error)
-            }
-        } else {
-            val user = state.user
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Profile photo box
-                Box(
-                    modifier = Modifier
-                        .padding(top = 32.dp, bottom = 24.dp)
-                        .shadow(8.dp, shape = CircleShape)
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .background(Color.LightGray),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Profile Photo",
-                        tint = Color.White,
-                        modifier = Modifier.size(60.dp)
+            state.error != null -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = state.error ?: "Error loading profile",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
-
-                // Profile info
-                Card(
+            }
+            else -> {
+                val user = state.user
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    elevation = CardDefaults.cardElevation(4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        ProfileInfoRow("Name", user?.name ?: "")
-                        Divider(Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
-                        ProfileInfoRow("Phone no.", user?.phone ?: "")
-                        Divider(Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
-                        ProfileInfoRow("E-Mail", user?.email ?: "")
-                        Divider(Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
-                        ProfileInfoRow("Role", user?.role?.name ?: "")
+                    // Profile photo with border
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 32.dp, bottom = 24.dp)
+                            .shadow(8.dp, shape = CircleShape, clip = true)
+                            .size(120.dp)
+                            .border(3.dp, primaryColor, CircleShape)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Profile Photo",
+                            tint = primaryColor,
+                            modifier = Modifier.size(60.dp)
+                        )
                     }
-                }
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Button(
-                    onClick = {
-                        logout(preferences)
-                        navController.navigate("signin") {
-                            popUpTo(0) { inclusive = true } // Clears back stack
-                            launchSingleTop = true
+                    // Profile info card
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        elevation = CardDefaults.cardElevation(4.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = surfaceColor)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            ProfileInfoRow("Name", user?.name ?: "Not provided")
+                            Divider(
+                                modifier = Modifier.padding(vertical = 12.dp),
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                thickness = 1.dp
+                            )
+                            ProfileInfoRow("Phone no.", user?.phone ?: "Not provided")
+                            Divider(
+                                modifier = Modifier.padding(vertical = 12.dp),
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                thickness = 1.dp
+                            )
+                            ProfileInfoRow("E-Mail", user?.email ?: "Not provided")
+                            Divider(
+                                modifier = Modifier.padding(vertical = 12.dp),
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                thickness = 1.dp
+                            )
+                            ProfileInfoRow("Role", user?.role?.name ?: "Not provided")
                         }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 32.dp, vertical = 24.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Sign Out", style = MaterialTheme.typography.labelLarge)
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Sign out button
+                    Button(
+                        onClick = {
+                            logout(preferences)
+                            navController.navigate("signin") {
+                                popUpTo(0) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 32.dp, vertical = 16.dp)
+                            .height(48.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.error
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.signout64),
+                            contentDescription = null
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "Sign Out",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }
     }
 }
+
 @Composable
 fun ProfileInfoRow(label: String, value: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
