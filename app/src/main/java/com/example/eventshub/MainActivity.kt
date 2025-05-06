@@ -9,7 +9,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -43,25 +47,41 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.net.URLDecoder
 
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             val preferences: SharedPreferences = koinInject()
-            val token = preferences.getString("token", null)
-            val userId = preferences.getLong("userId", -1)
-            val role = preferences.getString("role", null)
+
+            var token by remember { mutableStateOf(preferences.getString("token", null)) }
+            var userId by remember { mutableStateOf(preferences.getLong("userId", -1)) }
+            var role by remember { mutableStateOf(preferences.getString("role", null)) }
+
+            // Listen to preference changes
+            DisposableEffect(Unit) {
+                val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                    if (key == "token" || key == "userId" || key == "role") {
+                        token = preferences.getString("token", null)
+                        userId = preferences.getLong("userId", -1)
+                        role = preferences.getString("role", null)
+                    }
+                }
+                preferences.registerOnSharedPreferenceChangeListener(listener)
+                onDispose {
+                    preferences.unregisterOnSharedPreferenceChangeListener(listener)
+                }
+            }
+
             EventsHubTheme {
                 App(token, userId, role)
             }
         }
     }
 }
+
 @Composable
 fun App(token:String?, userId: Long?, role: String?) {
-    val preferences: SharedPreferences = koinInject()
     val navController = rememberNavController()
     Log.d("Role", role.toString())
     val isLoggedIn = token != null && userId != -1L && role != null
