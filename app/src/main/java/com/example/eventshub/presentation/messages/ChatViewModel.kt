@@ -4,10 +4,12 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.eventshub.data.model.*
+import com.example.eventshub.data.model.Message
+import com.example.eventshub.data.model.MessageRequestInfo
 import com.example.eventshub.domain.repository.MessageRepository
 import com.example.eventshub.util.Resource
 import kotlinx.coroutines.launch
+
 class ChatViewModel(
     private val repository: MessageRepository,
     private val preferences: SharedPreferences

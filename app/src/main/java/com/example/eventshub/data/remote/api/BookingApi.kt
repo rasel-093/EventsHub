@@ -3,7 +3,6 @@ package com.example.eventshub.data.remote.api
 import com.example.eventshub.data.model.BookingUpdateInfo
 import com.example.eventshub.data.model.BookingWithServiceDetails
 import com.example.eventshub.data.model.ServiceBookingInfo
-import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET

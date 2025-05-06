@@ -1,10 +1,11 @@
 package com.example.eventshub.presentation.home.detail
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -21,7 +23,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -37,16 +41,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.eventshub.components.ButtonFullWidth
+import com.example.eventshub.R
 import com.example.eventshub.components.TopBarWithBackButton
 import com.example.eventshub.data.model.Event
 import com.example.eventshub.data.model.Service
 import com.example.eventshub.presentation.events.EventsViewModel
-import com.example.eventshub.presentation.home.HomeViewModel
+import com.example.eventshub.ui.theme.primaryColor
 import com.example.eventshub.util.formatMillisToReadableDateTime
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -104,15 +109,46 @@ fun ServiceDetailScreen(
                 Text("📌 Type: ${service.serviceType}", color = Color.Gray)
             }
         }
-            ButtonFullWidth(text = "Message") {
-                //Navigate to ChatScreen with the serviceId
-                navController.navigate("chat/${service.serviceProviderId}/${service.title}") // Using service.title as a fallback for name
-            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                OutlinedButton(
+                    onClick = {
+                        navController.navigate("chat/${service.serviceProviderId}/${service.title}")
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = primaryColor
+                    ),
+                    border = BorderStroke(1.dp, primaryColor)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.message64),
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text("Message")
+                }
 
-            ButtonFullWidth(if (showSelection) "Cancel" else "Buy Service") {
-                showSelection = !showSelection
+                OutlinedButton(
+                    onClick = { showSelection = !showSelection },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = primaryColor
+                    ),
+                    border = BorderStroke(1.dp, primaryColor)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.cart64),
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(if (showSelection) "Cancel" else "Add to Cart")
+                }
             }
-
             Spacer(Modifier.height(16.dp))
 
             AnimatedVisibility(visible = showSelection) {

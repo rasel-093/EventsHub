@@ -12,7 +12,6 @@ import retrofit2.HttpException
 import java.io.IOException
 import java.net.UnknownHostException
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.math.log
 
 class EventRepositoryImpl(private val api: EventApi) : EventRepository {
     override suspend fun getEventsOfUser(userId: Long, token: String): Resource<List<Event>> {

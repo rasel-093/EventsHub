@@ -1,6 +1,5 @@
 package com.example.eventshub.data.remote.repository
 
-import android.util.Log
 import com.example.eventshub.data.model.Service
 import com.example.eventshub.data.remote.api.ServiceApi
 import com.example.eventshub.domain.model.ServiceEventInfo

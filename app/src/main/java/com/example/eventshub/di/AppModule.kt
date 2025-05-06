@@ -34,7 +34,6 @@ import com.example.eventshub.presentation.profile.ProfileViewModel
 import com.example.eventshub.presentation.serviceprovider.ServiceProviderViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.viewModel
-import org.koin.core.scope.get
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

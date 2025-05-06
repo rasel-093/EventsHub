@@ -1,11 +1,10 @@
 package com.example.eventshub.data.remote.repository
 
-import com.example.eventshub.data.model.*
+import com.example.eventshub.data.model.BookingUpdateInfo
+import com.example.eventshub.data.model.BookingWithServiceDetails
+import com.example.eventshub.data.model.ServiceBookingInfo
 import com.example.eventshub.data.remote.api.BookingApi
 import com.example.eventshub.domain.repository.BookingRepository
-import com.example.eventshub.util.Resource
-import retrofit2.HttpException
-import java.io.IOException
 
 class BookingRepositoryImpl(
     private val api: BookingApi

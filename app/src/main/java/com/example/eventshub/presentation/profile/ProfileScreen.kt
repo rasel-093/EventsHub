@@ -43,14 +43,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.example.eventshub.R
-import com.example.eventshub.ui.theme.primaryColor
-import com.example.eventshub.util.logout
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -182,11 +181,21 @@ fun ProfileScreen(
                     // Sign out button
                     Button(
                         onClick = {
-                            logout(preferences)
+                            preferences.edit() { clear() }
+                            //navController.clearBackStack()
+//                            navController.navigate("signin") {
+//                                popUpTo(0) { inclusive = true }
+//                                launchSingleTop = true
+//                            }
                             navController.navigate("signin") {
-                                popUpTo(0) { inclusive = true }
+                                // Pop everything including the current screen
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    inclusive = true
+                                }
+                                // Prevent multiple copies
                                 launchSingleTop = true
                             }
+
                         },
                         modifier = Modifier
                             .fillMaxWidth()

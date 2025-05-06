@@ -1,13 +1,11 @@
 package com.example.eventshub.presentation.messages
 
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.eventshub.data.model.*
+import com.example.eventshub.data.model.UserBasicInfo
 import com.example.eventshub.domain.repository.MessageRepository
-import com.example.eventshub.util.Resource
 import kotlinx.coroutines.launch
 
 class MessageListViewModel(
@@ -31,9 +29,7 @@ class MessageListViewModel(
             try {
                 val result = repository.getConnectedUsers(token, userId)
                 users.value = result.data ?: emptyList()
-                Log.d("MessageListViewModel", "${result.data}")
             } catch (e: Exception) {
-                Log.e("MessageListViewModel", "Error loading connected users", e)
                 error.value = e.localizedMessage ?: "Unexpected error occurred"
             } finally {
                 isLoading.value = false

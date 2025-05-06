@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.eventshub.R
 import com.example.eventshub.components.ButtonFullWidth
-import com.example.eventshub.components.CustomSwitch
 import com.example.eventshub.components.PasswordField
 import com.example.eventshub.components.SmallText
 import com.example.eventshub.components.TextButtonSmall
@@ -69,16 +68,17 @@ fun SignInScreen(navController: NavHostController, viewModel: SignInViewModel = 
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                CustomSwitch(rememberMe) { rememberMe = it }
-                SmallText("Remember Me", textColorBlack)
-            }
-            TextButton(onClick = { navController.navigate("forgotpass") }) {
+//            Row(verticalAlignment = Alignment.CenterVertically) {
+//                CustomSwitch(rememberMe) { rememberMe = it }
+//                SmallText("Remember Me", textColorBlack)
+//            }
+            TextButton(
+                onClick = { navController.navigate("forgotpass") }) {
                 SmallText("Forgot Password?", textColorPrimary)
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        //Spacer(modifier = Modifier.height(16.dp))
 
         if (state.error != null) {
             Text(state.error ?: "", color = Color.Red)

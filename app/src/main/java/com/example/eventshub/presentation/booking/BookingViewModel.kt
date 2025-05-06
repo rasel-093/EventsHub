@@ -5,9 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.eventshub.data.model.*
+import com.example.eventshub.data.model.BookingStatus
+import com.example.eventshub.data.model.BookingUpdateInfo
+import com.example.eventshub.data.model.BookingWithServiceDetails
+import com.example.eventshub.data.model.ServiceBookingInfo
 import com.example.eventshub.domain.repository.BookingRepository
-import com.example.eventshub.util.Resource
 import kotlinx.coroutines.launch
 
 class BookingViewModel(

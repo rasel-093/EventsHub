@@ -1,6 +1,8 @@
 package com.example.eventshub.domain.repository
 
-import com.example.eventshub.data.model.*
+import com.example.eventshub.data.model.Message
+import com.example.eventshub.data.model.MessageRequestInfo
+import com.example.eventshub.data.model.UserBasicInfo
 import com.example.eventshub.util.Resource
 
 interface MessageRepository {

@@ -1,6 +1,7 @@
 package com.example.eventshub.presentation.auth.signin
 
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
@@ -36,6 +37,7 @@ class SignInViewModel(
                                     .putString("token", result.data.token)
                                     .putString("role", result.data.roles)
                                     .apply()
+                               Log.d("Role Saved", result.data.roles)
                             }
                             SignInState(isSuccess = true)
                         }

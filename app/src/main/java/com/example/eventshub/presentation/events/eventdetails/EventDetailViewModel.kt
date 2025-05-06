@@ -1,7 +1,6 @@
 package com.example.eventshub.presentation.events.eventdetails
 
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue

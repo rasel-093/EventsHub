@@ -1,6 +1,6 @@
 package com.example.eventshub
 
-import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -11,7 +11,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -26,10 +25,9 @@ import com.example.eventshub.navigations.currentRoute
 import com.example.eventshub.presentation.auth.signin.SignInScreen
 import com.example.eventshub.presentation.auth.signup.SignUpScreen
 import com.example.eventshub.presentation.booking.BookingScreen
-import com.example.eventshub.presentation.booking.BookingViewModel
-import com.example.eventshub.presentation.events.eventdetails.EventDetailScreen
 import com.example.eventshub.presentation.events.EventsScreen
 import com.example.eventshub.presentation.events.EventsViewModel
+import com.example.eventshub.presentation.events.eventdetails.EventDetailScreen
 import com.example.eventshub.presentation.home.HomeScreen
 import com.example.eventshub.presentation.home.detail.ServiceDetailScreen
 import com.example.eventshub.presentation.messages.ChatScreen
@@ -42,6 +40,7 @@ import com.example.eventshub.screens.VerificationScreen
 import com.example.eventshub.ui.theme.EventsHubTheme
 import com.google.gson.Gson
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import java.net.URLDecoder
 
 
@@ -50,22 +49,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val preferences: SharedPreferences = koinInject()
+            val token = preferences.getString("token", null)
+            val userId = preferences.getLong("userId", -1)
+            val role = preferences.getString("role", null)
             EventsHubTheme {
-                App()
+                App(token, userId, role)
             }
         }
     }
 }
 @Composable
-fun App() {
-
+fun App(token:String?, userId: Long?, role: String?) {
+    val preferences: SharedPreferences = koinInject()
     val navController = rememberNavController()
-    val context = LocalContext.current
-    val preferences = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
-    val token = preferences.getString("token", null)
-    val userId = preferences.getLong("userId", -1)
-    val role = preferences.getString("role", null)
-    Log.d("Role", "Role is null")
+    Log.d("Role", role.toString())
     val isLoggedIn = token != null && userId != -1L && role != null
     NavHost(
         navController = navController,
@@ -95,8 +93,6 @@ fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = ko
             currentRoute?.startsWith("messages") == true -> true
             currentRoute?.startsWith("profile") == true -> true
             currentRoute?.startsWith("home") == true -> true
-           // currentRoute?.startsWith("serviceproviderhome") == true -> true
-           // currentRoute?.startsWith("home") == true -> true
             else -> false
         }
     }

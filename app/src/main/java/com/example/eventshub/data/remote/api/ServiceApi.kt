@@ -2,14 +2,12 @@ package com.example.eventshub.data.remote.api
 
 import com.example.eventshub.data.model.Service
 import com.example.eventshub.domain.model.ServiceEventInfo
-import com.example.eventshub.util.Resource
 import okhttp3.ResponseBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
-import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface ServiceApi {
