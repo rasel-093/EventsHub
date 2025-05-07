@@ -166,7 +166,7 @@ fun EventDetailScreen(
                             border = BorderStroke(1.dp, primaryColor)
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.message64),
+                                painter = painterResource(R.drawable.edit64),
                                 contentDescription = null
                             )
                             Spacer(Modifier.width(8.dp))

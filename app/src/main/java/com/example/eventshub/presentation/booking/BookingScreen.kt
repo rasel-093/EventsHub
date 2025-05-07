@@ -1,5 +1,6 @@
 package com.example.eventshub.presentation.booking
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -41,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -60,6 +62,7 @@ fun BookingScreen(
     val scope = rememberCoroutineScope()
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("All", "Approved")
+    val context = LocalContext.current
 
     Column {
         TabRow(selectedTabIndex = selectedTabIndex) {
@@ -91,6 +94,7 @@ fun BookingScreen(
                                     id = booking.bookingId,
                                     status = BookingStatus.APPROVED
                                 )
+                                Toast.makeText(context, "Booking Approved", Toast.LENGTH_SHORT).show()
                                 viewModel.loadBookings()
                             }
                         },
@@ -100,6 +104,7 @@ fun BookingScreen(
                                     id = booking.bookingId,
                                     status = BookingStatus.REJECTED
                                 )
+                                Toast.makeText(context, "Booking Approved", Toast.LENGTH_SHORT).show()
                                 viewModel.loadBookings()
                             }
                         }

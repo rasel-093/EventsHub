@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -31,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.eventshub.ui.theme.primaryColor
 import kotlinx.coroutines.delay
@@ -48,6 +50,7 @@ fun EditProfileScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
     LaunchedEffect(Unit) {
         viewModel.loadUserInfo()
     }
@@ -64,7 +67,7 @@ fun EditProfileScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
-        snackbarHost = {SnackbarHost(hostState = snackbarHostState)},
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = Color.White
     ) { padding ->
         Column(
@@ -80,15 +83,27 @@ fun EditProfileScreen(
                 value = viewModel.name,
                 onValueChange = { viewModel.name = it },
                 label = { Text("Name") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
             Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = viewModel.phone,
-                onValueChange = { viewModel.phone = it },
+                onValueChange = {
+                    viewModel.phone = it
+                    viewModel.validatePhone(it) // Validate on input change
+                },
                 label = { Text("Phone") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = viewModel.phoneError != null,
+                supportingText = {
+                    if (viewModel.phoneError != null) {
+                        Text(viewModel.phoneError!!, color = Color.Red)
+                    }
+                }
             )
 
             if (viewModel.error != null) {
@@ -99,7 +114,21 @@ fun EditProfileScreen(
 
             Button(
                 onClick = {
-                    viewModel.updateUser()
+                    viewModel.validatePhone(viewModel.phone) // Re-validate before saving
+                    if (viewModel.phoneError == null && viewModel.name.isNotBlank()) {
+                        viewModel.updateUser()
+                    } else {
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = when {
+                                    viewModel.name.isBlank() -> "Name cannot be empty"
+                                    viewModel.phoneError != null -> viewModel.phoneError!!
+                                    else -> "Please fix the errors"
+                                },
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()

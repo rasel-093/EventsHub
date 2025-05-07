@@ -41,8 +41,7 @@ class SignInViewModel(
                             }
                             SignInState(isSuccess = true)
                         }
-
-                        is Resource.Error -> SignInState(error = result.message)
+                        is Resource.Error -> SignInState(error = "Invalid email or password")
                         else -> SignInState()
                     }
                 }
