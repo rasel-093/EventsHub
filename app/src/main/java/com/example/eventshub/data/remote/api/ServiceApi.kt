@@ -1,8 +1,10 @@
 package com.example.eventshub.data.remote.api
 
 import com.example.eventshub.data.model.Service
+import com.example.eventshub.data.model.ServiceRatingInfo
 import com.example.eventshub.domain.model.ServiceEventInfo
 import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -23,6 +25,17 @@ interface ServiceApi {
         @Body info: ServiceEventInfo
     ): ResponseBody
 
+    @POST("/rate")
+    suspend fun rateService(
+        @Body ratingInfo: ServiceRatingInfo,
+        @Header("Authorization") token: String
+    ): Response<ResponseBody>
+
+    @GET("/service/{id}")
+    suspend fun getServiceById(
+        @Header("Authorization") token: String,
+        @Path("id") serviceId: Long
+    ): Response<Service>
 
     //For Service provider
     @GET("/servicesByProvider/{id}")
@@ -51,4 +64,5 @@ interface ServiceApi {
         //@Path("id") id: Long,
         @Body service: Service
     ): ResponseBody
+
 }

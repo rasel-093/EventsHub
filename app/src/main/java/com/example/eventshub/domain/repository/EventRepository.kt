@@ -13,6 +13,7 @@ interface EventRepository {
     suspend fun getServicesOfEvent(eventId: Long, token: String): Resource<List<Service>>
     suspend fun deleteEvent(eventId: Long, token: String): Resource<String>
     suspend fun removeServiceFromEvent(info: ServiceEventInfo, token: String): Resource<String>
+    suspend fun getEventCost(eventId: Long, token: String): Resource<Float>
 
 
 }

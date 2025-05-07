@@ -27,11 +27,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.example.eventshub.R
 import com.example.eventshub.presentation.home.components.SearchBarCustom
 import com.example.eventshub.ui.theme.primaryColor
+import com.example.eventshub.util.fixLocalhostUrl
 import com.google.gson.Gson
 import org.koin.androidx.compose.koinViewModel
 import java.net.URLEncoder
@@ -77,7 +81,7 @@ fun HomeScreen(
 
             else -> {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    itemsIndexed(filteredServices) { index,service ->
+                    itemsIndexed(filteredServices) { index, service ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -96,17 +100,20 @@ fun HomeScreen(
                                     .padding(16.dp)
                                     .fillMaxWidth()
                             ) {
+                                val imageUrl = fixLocalhostUrl(service.imageLink)
                                 AsyncImage(
-                                    model = service.imageLink,
-                                    contentDescription = null,
+                                    model = imageUrl,
+                                    contentDescription = "Event Image",
                                     modifier = Modifier
                                         .size(80.dp)
-                                        .padding(end = 16.dp)
+                                        .padding(end = 16.dp),
+                                    contentScale = ContentScale.Crop,
+                                    error = painterResource(R.drawable.decorator128)
                                 )
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     Text(
                                         text = service.title,
-                                        color =  primaryColor,
+                                        color = primaryColor,
                                         style = MaterialTheme.typography.titleMedium
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))

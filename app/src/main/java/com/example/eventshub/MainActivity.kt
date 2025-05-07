@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun App(token:String?, userId: Long?, role: String?) {
+fun App(token: String?, userId: Long?, role: String?) {
     val navController = rememberNavController()
     Log.d("Role", role.toString())
     val isLoggedIn = token != null && userId != -1L && role != null
@@ -100,8 +100,13 @@ fun App(token:String?, userId: Long?, role: String?) {
         }
     }
 }
+
 @Composable
-fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = koinViewModel(), role: String) {
+fun MainScreen(
+    navController: NavHostController,
+    viewModel: EventsViewModel = koinViewModel(),
+    role: String
+) {
     val tabNavController = rememberNavController()
 
     //Conditional bottom bar rendering
@@ -142,7 +147,10 @@ fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = ko
                 }
             }
             composable("messages") { MessageScreen(tabNavController) }
-            composable("profile") { ProfileScreen(innerPadding, navController, tabNavController = tabNavController) }
+            composable("profile") {
+                ProfileScreen(innerPadding, navController, tabNavController = tabNavController)
+                //ImageUploadScreen()
+            }
 
             /** Sub Screens inside tabs */
             composable(
@@ -178,8 +186,9 @@ fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = ko
 
             composable(
                 route = "eventdetails/{eventJson}",
-                arguments = listOf(navArgument("eventJson") { type = NavType.StringType }))
-            {backStackEntry ->
+                arguments = listOf(navArgument("eventJson") { type = NavType.StringType })
+            )
+            { backStackEntry ->
                 val json = backStackEntry.arguments?.getString("eventJson") ?: ""
                 val event = Gson().fromJson(URLDecoder.decode(json, "UTF-8"), Event::class.java)
                 if (event != null) {
@@ -199,7 +208,11 @@ fun MainScreen(navController: NavHostController, viewModel: EventsViewModel = ko
             ) { backStackEntry ->
                 val receiverId = backStackEntry.arguments?.getLong("receiverId") ?: -1L
                 val receiverName = backStackEntry.arguments?.getString("receiverName") ?: "Chat"
-                ChatScreen(receiverId = receiverId, navController =  tabNavController, receiverName = receiverName)
+                ChatScreen(
+                    receiverId = receiverId,
+                    navController = tabNavController,
+                    receiverName = receiverName
+                )
             }
 
         }

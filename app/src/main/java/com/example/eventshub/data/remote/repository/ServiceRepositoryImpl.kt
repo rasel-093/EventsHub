@@ -1,6 +1,7 @@
 package com.example.eventshub.data.remote.repository
 
 import com.example.eventshub.data.model.Service
+import com.example.eventshub.data.model.ServiceRatingInfo
 import com.example.eventshub.data.remote.api.ServiceApi
 import com.example.eventshub.domain.model.ServiceEventInfo
 import com.example.eventshub.domain.repository.ServiceRepository
@@ -48,9 +49,34 @@ class ServiceRepositoryImpl(
             }
         }
     }
-
-
-
+    //Rate service
+    override suspend fun rateService(token: String, ratingInfo: ServiceRatingInfo): Result<String> {
+        return try {
+            val response = api.rateService(ratingInfo, "Bearer $token")
+            if (response.isSuccessful) {
+                val message = response.body()?.string() ?: "Rating submitted successfully"
+                Result.success(message)
+            } else {
+                Result.failure(Exception("Failed: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    override suspend fun getServiceById(serviceId: Long, token: String): Result<Service> {
+        return try {
+            val response = api.getServiceById("Bearer $token", serviceId)
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    Result.success(it)
+                } ?: Result.failure(Exception("Empty response"))
+            } else {
+                Result.failure(Exception("Error: ${response.code()} ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
     //For service provider
     override suspend fun getServicesByServiceProvider(userId: Long, token: String): Resource<List<Service>> {
         return try {

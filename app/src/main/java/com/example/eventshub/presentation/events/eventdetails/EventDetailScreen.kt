@@ -1,5 +1,6 @@
 package com.example.eventshub.presentation.events.eventdetails
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -35,10 +37,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.eventshub.R
 import com.example.eventshub.components.TopBarWithBackButton
 import com.example.eventshub.data.model.Event
@@ -50,6 +57,7 @@ import com.example.eventshub.presentation.events.components.RegisteredServiceCar
 import com.example.eventshub.presentation.events.components.ServiceCartCard
 import com.example.eventshub.presentation.events.createevent.CreateOrEditEventDialog
 import com.example.eventshub.ui.theme.primaryColor
+import com.example.eventshub.util.fixLocalhostUrl
 import com.example.eventshub.util.formatMillisToReadableDateTime
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -73,8 +81,8 @@ fun EventDetailScreen(
 
     LaunchedEffect(Unit) {
         viewModel.loadRegisteredServices(event.id)
+        viewModel.loadEventCost(event.id)
     }
-
     LaunchedEffect(viewModel.snackbarMessage) {
         viewModel.snackbarMessage?.let {
             scope.launch {
@@ -83,7 +91,6 @@ fun EventDetailScreen(
             }
         }
     }
-
     Scaffold(
         topBar = { TopBarWithBackButton(topBarText = event.name, {navController.navigateUp()}) },
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -95,6 +102,31 @@ fun EventDetailScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            if(event.imageLink != null){
+                if (event.imageLink!!.isNotEmpty()){
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(fixLocalhostUrl(event.imageLink!!))
+                            .crossfade(true)
+                            .listener(
+                                onError = { request, throwable ->
+                                    Log.e("ImageError", "Failed to load image", throwable.throwable)
+                                }
+                            )
+                            .build(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        placeholder = painterResource(R.drawable.profile_icon),
+                        error = painterResource(R.drawable.event64)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp),
@@ -113,11 +145,10 @@ fun EventDetailScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     BudgetSection(
-                        spent = 0f,
+                        spent = viewModel.eventCost ?: 0f,
                         total = event.budget
                     )
-
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -151,7 +182,7 @@ fun EventDetailScreen(
                             border = BorderStroke(1.dp, primaryColor)
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.cart64),
+                                painter = painterResource(R.drawable.delete64),
                                 contentDescription = null
                             )
                             Spacer(Modifier.width(8.dp))

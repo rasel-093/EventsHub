@@ -4,6 +4,7 @@ import com.example.eventshub.data.model.Event
 import com.example.eventshub.data.model.Service
 import com.example.eventshub.domain.model.ServiceEventInfo
 import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -51,8 +52,9 @@ interface EventApi {
         @Header("Authorization") token: String,
         @Body info: ServiceEventInfo
     ): ResponseBody
-
-
-
-
+    @GET("/eventCost/{id}")
+    suspend fun getEventCost(
+        @Path("id") id: Long,
+        @Header("Authorization") token: String
+    ): Response<Float>
 }

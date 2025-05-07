@@ -81,4 +81,5 @@ dependencies {
     implementation (libs.koin.core)
     // Coil
     implementation(libs.coil.compose)
+    implementation(libs.coil.compose)
 }

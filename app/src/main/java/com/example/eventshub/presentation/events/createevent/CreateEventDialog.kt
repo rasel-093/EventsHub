@@ -2,7 +2,7 @@ package com.example.eventshub.presentation.events.createevent
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import androidx.compose.foundation.BorderStroke
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +33,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.eventshub.R
 import com.example.eventshub.data.model.Event
+import com.example.eventshub.presentation.image.ImageUploadSection
+import com.example.eventshub.presentation.image.ImageUploadViewModel
 import com.example.eventshub.ui.theme.primaryColor
+import org.koin.androidx.compose.koinViewModel
+import java.io.File
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -48,20 +51,21 @@ fun CreateOrEditEventDialog(
     onDismiss: () -> Unit,
     onConfirm: (Event) -> Unit
 ) {
-    //val primaryColor = MaterialTheme.colorScheme.primary
     val surfaceColor = MaterialTheme.colorScheme.surface
     val isEdit = initial != null
+    val context = LocalContext.current
+    val viewModel: ImageUploadViewModel = koinViewModel()
 
     var name by remember { mutableStateOf(initial?.name ?: "") }
     var description by remember { mutableStateOf(initial?.description ?: "") }
     var budget by remember { mutableStateOf(initial?.budget?.toString() ?: "") }
-    var imageLink by remember { mutableStateOf(initial?.imageLink ?: "") }
+    var selectedFile by remember { mutableStateOf<File?>(null) }
+    var selectedDateTime by remember {
+        mutableStateOf<LocalDateTime?>(initial?.date?.let {
+            Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDateTime()
+        })
+    }
 
-    var selectedDateTime by remember { mutableStateOf<LocalDateTime?>(initial?.date?.let {
-        Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDateTime()
-    }) }
-
-    val context = LocalContext.current
     val dateTimeText = selectedDateTime?.format(
         DateTimeFormatter.ofPattern("MMMM d, yyyy 'at' h:mm a")
     ) ?: "Select date and time"
@@ -90,12 +94,7 @@ fun CreateOrEditEventDialog(
                     onValueChange = { name = it },
                     label = { Text("Event Name") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedLabelColor = primaryColor,
-                        focusedIndicatorColor = primaryColor
-                    ),
-                    shape = RoundedCornerShape(8.dp)
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
@@ -103,11 +102,6 @@ fun CreateOrEditEventDialog(
                     onValueChange = { description = it },
                     label = { Text("Description") },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedLabelColor = primaryColor,
-                        focusedIndicatorColor = primaryColor
-                    ),
-                    shape = RoundedCornerShape(8.dp),
                     maxLines = 3
                 )
 
@@ -118,25 +112,13 @@ fun CreateOrEditEventDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedLabelColor = primaryColor,
-                        focusedIndicatorColor = primaryColor
-                    ),
-                    shape = RoundedCornerShape(8.dp),
                     prefix = { Text("$") }
                 )
 
-                OutlinedTextField(
-                    value = imageLink,
-                    onValueChange = { imageLink = it },
-                    label = { Text("Image Link (optional)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedLabelColor = primaryColor,
-                        focusedIndicatorColor = primaryColor
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                )
+                // Replace Image Link input with image picker
+                ImageUploadSection { file ->
+                    selectedFile = file
+                }
 
                 Button(
                     onClick = {
@@ -162,18 +144,11 @@ fun CreateOrEditEventDialog(
                         datePicker.show()
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = primaryColor.copy(alpha = 0.1f),
-                        contentColor = primaryColor
-                    ),
-                    border = BorderStroke(1.dp, primaryColor.copy(alpha = 0.3f))
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.event64),
-                        contentDescription = null,
-                        tint = primaryColor
+                        containerColor = primaryColor
                     )
+                ) {
+                    Icon(painterResource(R.drawable.event64), null, tint = Color.White)
                     Spacer(Modifier.width(8.dp))
                     Text(dateTimeText)
                 }
@@ -182,41 +157,46 @@ fun CreateOrEditEventDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    if (name.isBlank() || description.isBlank() || budget.isBlank() || selectedDateTime == null) {
-                        return@Button
-                    }
-                    onConfirm(
-                        Event(
-                            id = initial?.id ?: 0L,
-                            name = name,
-                            description = description,
-                            organizerId = initial?.organizerId ?: 0L,
-                            imageLink = imageLink,
-                            date = selectedDateTime!!.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
-                            budget = budget.toFloat()
+                    if (name.isBlank() || description.isBlank() || budget.isBlank() || selectedDateTime == null) return@Button
+
+                    val proceedWithConfirm: (String) -> Unit = { imageUrl ->
+                        onConfirm(
+                            Event(
+                                id = initial?.id ?: 0L,
+                                name = name,
+                                description = description,
+                                organizerId = initial?.organizerId ?: 0L,
+                                imageLink = imageUrl,
+                                date = selectedDateTime!!
+                                    .atZone(ZoneId.systemDefault())
+                                    .toInstant().toEpochMilli(),
+                                budget = budget.toFloat()
+                            )
                         )
-                    )
+                    }
+
+                    if (selectedFile != null) {
+                        viewModel.uploadImage(selectedFile!!) { response ->
+                            if (response != null) {
+                                proceedWithConfirm(response.imageLink)
+                            } else {
+                                Toast.makeText(context, "Upload failed", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    } else {
+                        proceedWithConfirm(initial?.imageLink ?: "")
+                    }
                 },
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = primaryColor,
-                    contentColor = Color.White
-                )
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Text(if (isEdit) "Update" else "Create")
             }
         },
         dismissButton = {
-            OutlinedButton(
-                onClick = onDismiss,
-                shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onSurface
-                )
-            ) {
+            OutlinedButton(onClick = onDismiss) {
                 Text("Cancel")
             }
         }
     )
 }
+

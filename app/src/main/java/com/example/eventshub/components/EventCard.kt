@@ -73,33 +73,11 @@ fun EventCard(event: com.example.eventshub.data.model.Event, onClick: () -> Unit
                     modifier = Modifier.weight(1f)
                 )
             }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            LinearProgressIndicator(
-                progress = { 0.2F },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp),
-                color = primaryColor,
-                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-            )
-
             Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Spent: $${20000}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    text = "Budget: $${event.budget}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+            Text(
+                text = "Budget: $${event.budget}",
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }

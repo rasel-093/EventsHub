@@ -81,8 +81,6 @@ fun EventsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                //.padding(bottom = innerPadding.calculateBottomPadding())
-               // .padding(scaffoldPadding)
                 .background(Color.White)
         ) {
             Row(

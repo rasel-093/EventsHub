@@ -1,5 +1,6 @@
 package com.example.eventshub.presentation.home.detail
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
@@ -32,6 +33,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,18 +42,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import com.example.eventshub.R
 import com.example.eventshub.components.TopBarWithBackButton
 import com.example.eventshub.data.model.Event
 import com.example.eventshub.data.model.Service
 import com.example.eventshub.presentation.events.EventsViewModel
 import com.example.eventshub.ui.theme.primaryColor
+import com.example.eventshub.util.fixLocalhostUrl
 import com.example.eventshub.util.formatMillisToReadableDateTime
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -69,6 +74,9 @@ fun ServiceDetailScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    val serviceState by detailViewModel.service.collectAsState()
+    val updatedService = serviceState ?: service
+
     LaunchedEffect(detailViewModel.snackbarMessage) {
         detailViewModel.snackbarMessage?.let {
             scope.launch {
@@ -77,9 +85,12 @@ fun ServiceDetailScreen(
             }
         }
     }
-
     Scaffold(
-        topBar = {TopBarWithBackButton(topBarText = "Service Details", {navController.navigateUp()})},
+        topBar = {
+            TopBarWithBackButton(
+                topBarText = "Service Details",
+                { navController.navigateUp() })
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { innerPadding ->
         Column(
@@ -90,25 +101,39 @@ fun ServiceDetailScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            val imageUrl = fixLocalhostUrl(service.imageLink)
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "Event Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentScale = ContentScale.Crop,
+                error = painterResource(R.drawable.decorator128)
+            )
             // Service Card
-
             Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(6.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(service.title, style = MaterialTheme.typography.headlineSmall)
-                Spacer(Modifier.height(8.dp))
-                Text(service.description, style = MaterialTheme.typography.bodyMedium)
-                Spacer(Modifier.height(12.dp))
-
-                Text("⭐ Rating: ${service.rating}", color = Color(0xFF357AEA), fontWeight = FontWeight.Medium)
-                Text("💰 Fee: $${service.fee}", fontWeight = FontWeight.SemiBold)
-                Text("📌 Type: ${service.serviceType}", color = Color.Gray)
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(6.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(updatedService.title, style = MaterialTheme.typography.headlineSmall)
+                    Spacer(Modifier.height(8.dp))
+                    Text(updatedService.description, style = MaterialTheme.typography.bodyMedium)
+                    Spacer(Modifier.height(12.dp))
+                    // Use updatedService.rating here
+                    Text(
+                        "⭐ Rating: ${updatedService.rating}",
+                        color = Color(0xFF357AEA),
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text("💰 Fee: $${updatedService.fee}", fontWeight = FontWeight.SemiBold)
+                    Text("📌 Type: ${updatedService.serviceType}", color = Color.Gray)
+                }
             }
-        }
+            RatingSection(service.id)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -150,12 +175,14 @@ fun ServiceDetailScreen(
                 }
             }
             Spacer(Modifier.height(16.dp))
-
             AnimatedVisibility(visible = showSelection) {
                 Column {
                     val events = state.upcomingEvents
 
-                    Text("Select an event to add this service:", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Select an event to add this service:",
+                        style = MaterialTheme.typography.titleMedium
+                    )
 
                     Spacer(Modifier.height(8.dp))
 
@@ -169,7 +196,9 @@ fun ServiceDetailScreen(
                                 .clickable { selectedItem = item },
                             elevation = CardDefaults.cardElevation(if (isSelected) 6.dp else 2.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = if (isSelected) Color(0xFFA0CBF1) else Color(0xFFF9F9F9)
+                                containerColor = if (isSelected) Color(0xFFA0CBF1) else Color(
+                                    0xFFF9F9F9
+                                )
                             )
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
@@ -188,7 +217,11 @@ fun ServiceDetailScreen(
                         Button(
                             onClick = {
                                 detailViewModel.addServiceToEvent(service.id, it.id)
-                                Toast.makeText(context,"Service Added Successfully", Toast.LENGTH_SHORT ).show()
+                                Toast.makeText(
+                                    context,
+                                    "Service Added Successfully",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                                 showSelection = false
                                 selectedItem = null
                             },

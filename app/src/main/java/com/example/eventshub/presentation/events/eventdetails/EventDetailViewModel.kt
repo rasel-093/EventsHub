@@ -78,6 +78,24 @@ class EventDetailViewModel(
         }
     }
 
+    var eventCost by mutableStateOf<Float?>(null)
+
+    fun loadEventCost(eventId: Long) {
+        val token = preferences.getString("token", "") ?: ""
+        if (token.isBlank()) return
+
+        viewModelScope.launch {
+            isLoading = true
+            val result = repository.getEventCost(eventId, token)
+            if (result is Resource.Success) {
+                eventCost = result.data
+            } else {
+                snackbarMessage = result.message
+            }
+            isLoading = false
+        }
+    }
+
 
 
     fun clearMessage() {

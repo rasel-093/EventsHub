@@ -91,6 +91,17 @@ class EventRepositoryImpl(private val api: EventApi) : EventRepository {
         }
     }
 
-
+    override suspend fun getEventCost(eventId: Long, token: String): Resource<Float> {
+        return try {
+            val response = api.getEventCost(eventId, "Bearer $token")
+            if (response.isSuccessful) {
+                Resource.Success(response.body() ?: 0f)
+            } else {
+                Resource.Error("Failed to get event cost: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Exception: ${e.message}")
+        }
+    }
 
 }

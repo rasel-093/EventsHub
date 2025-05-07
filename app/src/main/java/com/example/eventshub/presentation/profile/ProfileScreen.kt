@@ -182,11 +182,6 @@ fun ProfileScreen(
                     Button(
                         onClick = {
                             preferences.edit() { clear() }
-                            //navController.clearBackStack()
-//                            navController.navigate("signin") {
-//                                popUpTo(0) { inclusive = true }
-//                                launchSingleTop = true
-//                            }
                             navController.navigate("signin") {
                                 // Pop everything including the current screen
                                 popUpTo(navController.graph.findStartDestination().id) {
