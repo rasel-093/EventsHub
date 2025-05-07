@@ -1,14 +1,19 @@
 package com.example.eventshub.data.remote.repository
 
 import android.util.Log
+import com.example.eventshub.data.model.ImageUploadResponse
 import com.example.eventshub.data.model.Message
 import com.example.eventshub.data.model.MessageRequestInfo
 import com.example.eventshub.data.model.UserBasicInfo
 import com.example.eventshub.data.remote.api.MessageApi
 import com.example.eventshub.domain.repository.MessageRepository
 import com.example.eventshub.util.Resource
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
 import java.io.IOException
+import java.io.InputStream
 
 class MessageRepositoryImpl(private val api: MessageApi) : MessageRepository {
     override suspend fun sendMessage(token: String, message: Message): Resource<String> {
@@ -52,6 +57,16 @@ class MessageRepositoryImpl(private val api: MessageApi) : MessageRepository {
                 is IOException -> Resource.Error("Network error. Please try again.")
                 else -> Resource.Error("Unexpected error: ${e.localizedMessage}")
             }
+        }
+    }
+    override suspend fun uploadImage(token: String, inputStream: InputStream, fileName: String): Resource<ImageUploadResponse> {
+        return try {
+            val filePart = inputStream.readBytes().toRequestBody("image/*".toMediaTypeOrNull())
+            val multipartBody = MultipartBody.Part.createFormData("file", fileName, filePart)
+            val response = api.uploadImage("Bearer $token", multipartBody)
+            Resource.Success(response)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Upload failed")
         }
     }
 }

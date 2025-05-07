@@ -1,5 +1,9 @@
 package com.example.eventshub.presentation.messages
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -8,7 +12,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -35,8 +41,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.LineBreak.Strategy.Companion.Simple
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import com.example.eventshub.R
+import com.example.eventshub.util.fixLocalhostUrl
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -53,7 +66,15 @@ fun ChatScreen(
     val messages by viewModel.messages
     val isLoading by viewModel.isLoading
     var input by remember { mutableStateOf("") }
-    Log.d("ChatScreen", "$messages, $isLoading")
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
+
+    // Launcher for picking an image
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        selectedImageUri = uri
+    }
 
     LaunchedEffect(Unit) {
         viewModel.loadMessages(receiverId)
@@ -85,10 +106,24 @@ fun ChatScreen(
                             .padding(4.dp),
                         horizontalArrangement = if (isSender) Arrangement.End else Arrangement.Start
                     ) {
-                        Column(modifier = Modifier
-                            .background(Color(0xFFE3F2FD))
-                            .padding(8.dp)) {
-                            Text(message.text)
+                        Column(
+                            modifier = Modifier
+                                .background(Color(0xFFE3F2FD))
+                                .padding(8.dp)
+                        ) {
+                            if (message.imageLink != null) {
+                                AsyncImage(
+                                    model = fixLocalhostUrl(message.imageLink) ,
+                                    contentDescription = "Attached image",
+                                    modifier = Modifier
+                                        .size(200.dp)
+                                        .padding(bottom = 4.dp),
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                            if (message.text.isNotBlank()) {
+                                Text(message.text)
+                            }
                             Text(
                                 text = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(message.sentAt)),
                                 style = MaterialTheme.typography.labelSmall,
@@ -98,6 +133,18 @@ fun ChatScreen(
                     }
                 }
             }
+            // Preview selected image
+            selectedImageUri?.let { uri ->
+                AsyncImage(
+                    model = uri,
+                    contentDescription = "Selected image preview",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .padding(8.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -105,39 +152,61 @@ fun ChatScreen(
                     .background(Color.White),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextField(
-                    value = input,
-                    onValueChange = { input = it },
+                Row(
                     modifier = Modifier
                         .weight(1f)
                         .background(Color.White, CircleShape)
-                        .border(1.dp, Color.LightGray, CircleShape),
-                    placeholder = { Text("Type a message", color = Color.Gray) },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        disabledContainerColor = Color.White,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
-                    shape = CircleShape,
-                    singleLine = true
-                )
+                        .border(1.dp, Color.LightGray, CircleShape)
+                        .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextField(
+                        value = input,
+                        onValueChange = { input = it },
+                        modifier = Modifier.weight(1f),
+                        placeholder = { Text("Type a message", color = Color.Gray) },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            disabledContainerColor = Color.White,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent
+                        ),
+                        shape = CircleShape,
+                        singleLine = true
+                    )
+                    IconButton(
+                        onClick = {
+                            pickImageLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.attach64),
+                            contentDescription = "Attach image",
+                            tint = Color.Gray
+                        )
+                    }
+                }
                 Button(
                     onClick = {
-                        if (input.isNotBlank()) {
-                            viewModel.sendMessage(receiverId, input)
-                            Log.d("ChatScreen", "Message sent: $input, ReceiverId: $receiverId")
+                        if (input.isNotBlank() || selectedImageUri != null) {
+                            viewModel.sendMessage(
+                                receiverId = receiverId,
+                                text = input,
+                                imageUri = selectedImageUri,
+                                context = context
+                            )
                             input = ""
+                            selectedImageUri = null
                         }
                     },
-                    modifier = Modifier
-                        .padding(4.dp),
+                    modifier = Modifier.padding(4.dp),
                     shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4A8CC0) // WhatsApp green color
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A8CC0)),
+                    enabled = input.isNotBlank() || selectedImageUri != null
                 ) {
                     Icon(
                         imageVector = Icons.Default.Send,
