@@ -10,12 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,19 +22,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.eventshub.R
-import com.example.eventshub.screens.Event
 import com.example.eventshub.ui.theme.primaryColor
+import com.example.eventshub.util.formatMillisToReadableDateTime
 
 @Composable
-fun EventCard(event: Event, navController: NavHostController) {
+fun EventCard(event: com.example.eventshub.data.model.Event, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable{
-                navController.navigate("eventDetails")
+                onClick()
             },
         elevation = CardDefaults.cardElevation(4.dp),
         shape = RoundedCornerShape(12.dp),
@@ -70,59 +66,17 @@ fun EventCard(event: Event, navController: NavHostController) {
                     tint = Color.Gray
                 )
                 Text(
-                    text = " ${event.date}",
+                    text = formatMillisToReadableDateTime(event.date),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray,
                     modifier = Modifier.weight(1f)
                 )
             }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = "Location",
-                    modifier = Modifier.size(16.dp),
-                    tint = Color.Gray
-                )
-                Text(
-                    text = "Event place",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
             Spacer(modifier = Modifier.height(8.dp))
-
-            LinearProgressIndicator(
-                progress = { 0.2F },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp),
-                color = primaryColor,
-                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+            Text(
+                text = "Budget: $${event.budget}",
+                style = MaterialTheme.typography.bodySmall
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Spent: $${20000}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    text = "Budget: $${15000}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
         }
     }
 }
