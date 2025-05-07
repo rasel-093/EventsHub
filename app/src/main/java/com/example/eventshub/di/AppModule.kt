@@ -2,6 +2,7 @@ package com.example.eventshub.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.eventshub.data.remote.api.AIApi
 import com.example.eventshub.data.remote.api.AuthApi
 import com.example.eventshub.data.remote.api.BookingApi
 import com.example.eventshub.data.remote.api.EventApi
@@ -9,6 +10,7 @@ import com.example.eventshub.data.remote.api.ImageApi
 import com.example.eventshub.data.remote.api.MessageApi
 import com.example.eventshub.data.remote.api.ServiceApi
 import com.example.eventshub.data.remote.api.UserApi
+import com.example.eventshub.data.remote.repository.AIRepositoryImpl
 import com.example.eventshub.data.remote.repository.AuthRepositoryImpl
 import com.example.eventshub.data.remote.repository.BookingRepositoryImpl
 import com.example.eventshub.data.remote.repository.EventRepositoryImpl
@@ -16,6 +18,7 @@ import com.example.eventshub.data.remote.repository.ImageRepositoryImpl
 import com.example.eventshub.data.remote.repository.MessageRepositoryImpl
 import com.example.eventshub.data.remote.repository.ServiceRepositoryImpl
 import com.example.eventshub.data.remote.repository.UserRepositoryImpl
+import com.example.eventshub.domain.repository.AIRepository
 import com.example.eventshub.domain.repository.AuthRepository
 import com.example.eventshub.domain.repository.BookingRepository
 import com.example.eventshub.domain.repository.EventRepository
@@ -23,6 +26,7 @@ import com.example.eventshub.domain.repository.ImageRepository
 import com.example.eventshub.domain.repository.MessageRepository
 import com.example.eventshub.domain.repository.ServiceRepository
 import com.example.eventshub.domain.repository.UserRepository
+import com.example.eventshub.presentation.aichat.AIChatViewModel
 import com.example.eventshub.presentation.auth.signin.SignInViewModel
 import com.example.eventshub.presentation.auth.signup.SignUpViewModel
 import com.example.eventshub.presentation.booking.BookingViewModel
@@ -60,6 +64,8 @@ val appModule = module {
     single { get<Retrofit>().create(MessageApi::class.java) }
     single { get<Retrofit>().create(BookingApi::class.java) }
     single { get<Retrofit>().create(ImageApi::class.java) }
+    single { get<Retrofit>().create(AIApi::class.java) }
+
 
 
     // Provide Repositories
@@ -73,6 +79,7 @@ val appModule = module {
     single<MessageRepository> { MessageRepositoryImpl(get()) }
     single<BookingRepository> { BookingRepositoryImpl(get()) }
     single<ImageRepository> { ImageRepositoryImpl(get()) }
+    single<AIRepository> { AIRepositoryImpl(get()) }
 
 
 
@@ -112,4 +119,5 @@ val appModule = module {
     viewModel { BookingViewModel(get(), get()) }
     //Image
     viewModel { ImageUploadViewModel(get()) }
+    viewModel { AIChatViewModel(get(), get()) }
 }

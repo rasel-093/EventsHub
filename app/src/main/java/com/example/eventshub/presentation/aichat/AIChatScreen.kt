@@ -1,17 +1,11 @@
-package com.example.eventshub.presentation.messages
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
+package com.example.eventshub.presentation.aichat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,12 +35,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.eventshub.R
 import com.example.eventshub.util.fixLocalhostUrl
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
@@ -55,27 +47,15 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(
-    receiverId: Long,
-    receiverName: String,
-    navController: NavHostController,
-    viewModel: ChatViewModel = koinViewModel()
+fun AIChatScreen(
+    navController: NavController,
+    viewModel: AIChatViewModel = koinViewModel()
 ) {
     val messages by viewModel.messages
     val isLoading by viewModel.isLoading
     var input by remember { mutableStateOf("") }
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-    val context = LocalContext.current
-
-    // Launcher for picking an image
-    val pickImageLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
-        selectedImageUri = uri
-    }
-
     LaunchedEffect(Unit) {
-        viewModel.loadMessages(receiverId)
+        viewModel.loadMessages()
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -85,7 +65,7 @@ fun ChatScreen(
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                 }
             },
-            title = { Text(receiverName) }
+            title = { Text("AI Chat") }
         )
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -97,51 +77,44 @@ fun ChatScreen(
                 reverseLayout = true
             ) {
                 items(messages.reversed()) { message ->
-                    val isSender = message.senderId != receiverId
+                    val isSender = message?.senderId != 0L // AI uses senderId = 0L
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(4.dp),
-                        horizontalArrangement = if (isSender) Arrangement.End else Arrangement.Start
                     ) {
                         Column(
                             modifier = Modifier
-                                .background(Color(0xFFE3F2FD))
+                                .fillMaxWidth()
                                 .padding(8.dp)
                         ) {
-                            if (message.imageLink != null) {
+                            if (message?.imageLink != null) {
                                 AsyncImage(
-                                    model = fixLocalhostUrl(message.imageLink) ,
-                                    contentDescription = "Attached image",
+                                    model = fixLocalhostUrl(message.imageLink),
+                                    contentDescription = "AI-generated image",
                                     modifier = Modifier
                                         .size(200.dp)
                                         .padding(bottom = 4.dp),
                                     contentScale = ContentScale.Fit
                                 )
                             }
-                            if (message.text.isNotBlank()) {
-                                Text(message.text)
+                            if (message?.text?.isNotBlank() == true) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = message.text,
+                                    textAlign = TextAlign.End
+                                )
                             }
                             Text(
-                                text = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(message.sentAt)),
+                                modifier = Modifier.fillMaxWidth(),
+                                text = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date()),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color.Gray
+                                color = Color.Gray,
+                                textAlign = TextAlign.End
                             )
                         }
                     }
                 }
-            }
-            // Preview selected image
-            selectedImageUri?.let { uri ->
-                AsyncImage(
-                    model = uri,
-                    contentDescription = "Selected image preview",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp)
-                        .padding(8.dp),
-                    contentScale = ContentScale.Fit
-                )
             }
             Row(
                 modifier = Modifier
@@ -150,61 +123,36 @@ fun ChatScreen(
                     .background(Color.White),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
+                TextField(
+                    value = input,
+                    onValueChange = { input = it },
                     modifier = Modifier
                         .weight(1f)
                         .background(Color.White, CircleShape)
-                        .border(1.dp, Color.LightGray, CircleShape)
-                        .padding(horizontal = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextField(
-                        value = input,
-                        onValueChange = { input = it },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text("Type a message", color = Color.Gray) },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            disabledContainerColor = Color.White,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent
-                        ),
-                        shape = CircleShape,
-                        singleLine = true
-                    )
-                    IconButton(
-                        onClick = {
-                            pickImageLauncher.launch(
-                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                            )
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.attach64),
-                            contentDescription = "Attach image",
-                            tint = Color.Gray
-                        )
-                    }
-                }
+                        .border(1.dp, Color.LightGray, CircleShape),
+                    placeholder = { Text("Type a message", color = Color.Gray) },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        disabledContainerColor = Color.White,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
+                    shape = CircleShape,
+                    singleLine = true
+                )
                 Button(
                     onClick = {
-                        if (input.isNotBlank() || selectedImageUri != null) {
-                            viewModel.sendMessage(
-                                receiverId = receiverId,
-                                text = input,
-                                imageUri = selectedImageUri,
-                                context = context
-                            )
+                        if (input.isNotBlank()) {
+                            viewModel.sendMessage(input)
                             input = ""
-                            selectedImageUri = null
                         }
                     },
                     modifier = Modifier.padding(4.dp),
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A8CC0)),
-                    enabled = input.isNotBlank() || selectedImageUri != null
+                    enabled = input.isNotBlank()
                 ) {
                     Icon(
                         imageVector = Icons.Default.Send,

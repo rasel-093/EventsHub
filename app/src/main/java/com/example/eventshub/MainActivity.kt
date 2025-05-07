@@ -26,6 +26,7 @@ import com.example.eventshub.data.model.Role
 import com.example.eventshub.data.model.Service
 import com.example.eventshub.navigations.BottomNavigationBar
 import com.example.eventshub.navigations.currentRoute
+import com.example.eventshub.presentation.aichat.AIChatScreen
 import com.example.eventshub.presentation.auth.signin.SignInScreen
 import com.example.eventshub.presentation.auth.signup.SignUpScreen
 import com.example.eventshub.presentation.booking.BookingScreen
@@ -213,6 +214,9 @@ fun MainScreen(
                     navController = tabNavController,
                     receiverName = receiverName
                 )
+            }
+            composable("ai_chat") {
+                AIChatScreen(navController = tabNavController)
             }
 
         }
