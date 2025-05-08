@@ -1,5 +1,6 @@
 package com.example.eventshub.presentation.serviceprovider
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -28,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.eventshub.data.model.Service
 import com.example.eventshub.ui.theme.primaryColor
@@ -40,7 +42,7 @@ fun ServiceProviderHomeScreen(viewModel: ServiceProviderViewModel = koinViewMode
     val isLoading by viewModel.isLoading
     val snackbarMessage by viewModel.snackbarMessage
     var showDialog by remember { mutableStateOf(false) }
-
+    val context = LocalContext.current
     var selectedForEdit by remember { mutableStateOf<Service?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -99,6 +101,7 @@ fun ServiceProviderHomeScreen(viewModel: ServiceProviderViewModel = koinViewMode
                     viewModel.updateService(it)
                 } else {
                     viewModel.createService(it)
+                    Toast.makeText(context, "Service Created", Toast.LENGTH_SHORT).show()
                 }
                 selectedForEdit = null
                 showDialog = false

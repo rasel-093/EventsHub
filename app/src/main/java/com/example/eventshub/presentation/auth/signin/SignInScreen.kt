@@ -67,19 +67,6 @@ fun SignInScreen(navController: NavHostController, viewModel: SignInViewModel = 
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-//            Row(verticalAlignment = Alignment.CenterVertically) {
-//                CustomSwitch(rememberMe) { rememberMe = it }
-//                SmallText("Remember Me", textColorBlack)
-//            }
-            TextButton(
-                onClick = { navController.navigate("forgotpass") }) {
-                SmallText("Forgot Password?", textColorPrimary)
-            }
-        }
-
-        //Spacer(modifier = Modifier.height(16.dp))
-
         if (state.error != null) {
             Text(state.error ?: "", color = Color.Red)
         }

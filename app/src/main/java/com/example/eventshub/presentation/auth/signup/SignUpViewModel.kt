@@ -81,7 +81,7 @@ class SignUpViewModel(
 
             _state.value = when (result) {
                 is Resource.Success -> SignUpState(isSuccess = true)
-                is Resource.Error ->SignUpState(error = result.message)
+                is Resource.Error ->SignUpState(error = "Already Registered")
                 else -> SignUpState()
             }
         }

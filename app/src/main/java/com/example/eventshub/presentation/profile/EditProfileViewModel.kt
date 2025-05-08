@@ -10,7 +10,6 @@ import com.example.eventshub.data.model.ChangeUserInfo
 import com.example.eventshub.domain.repository.UserRepository
 import com.example.eventshub.util.Resource
 import kotlinx.coroutines.launch
-
 class EditProfileViewModel(
     private val repository: UserRepository,
     private val preferences: SharedPreferences
@@ -19,6 +18,7 @@ class EditProfileViewModel(
     var name by mutableStateOf("")
     var phone by mutableStateOf("")
     var error by mutableStateOf<String?>(null)
+    var phoneError by mutableStateOf<String?>(null)
     var isLoading by mutableStateOf(false)
     var isSuccess by mutableStateOf(false)
 
@@ -33,6 +33,7 @@ class EditProfileViewModel(
                 val user = result.data!!
                 name = user.name
                 phone = user.phone
+                validatePhone(phone) // Validate loaded phone number
             } else {
                 error = result.message
             }
@@ -40,9 +41,17 @@ class EditProfileViewModel(
         }
     }
 
+    fun validatePhone(phone: String) {
+        phoneError = when {
+            phone.isBlank() -> "Phone number cannot be empty"
+            !phone.matches(Regex("\\d{10}")) -> "Phone number must be exactly 10 digits"
+            else -> null
+        }
+    }
+
     fun updateUser() {
-        val token = preferences.getString("token", "") ?: ""
         if (token.isBlank()) {
+            error = "Invalid user session"
             return
         }
         if (!validateFields()) return
@@ -55,14 +64,16 @@ class EditProfileViewModel(
             isLoading = false
         }
     }
+
     private fun validateFields(): Boolean {
+        validatePhone(phone) // Ensure phone is validated
         return when {
             name.isBlank() -> {
                 error = "Name cannot be empty"
                 false
             }
-            phone.isBlank() || phone.length < 10 || !phone.all { it.isDigit() } -> {
-                error = "Phone number is invalid"
+            phoneError != null -> {
+                error = phoneError
                 false
             }
             else -> {
@@ -71,5 +82,4 @@ class EditProfileViewModel(
             }
         }
     }
-
 }
